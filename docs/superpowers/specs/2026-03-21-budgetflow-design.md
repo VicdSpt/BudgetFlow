@@ -28,18 +28,20 @@ src/
       components/   GoalCard.tsx, GoalForm.tsx, GoalList.tsx
       hooks/        useGoals.ts
       types/        goal.types.ts
+      utils/        goalCalculations.ts   ← monthsToGoal, percentComplete
     budget/
       components/   BudgetForm.tsx, BudgetSummary.tsx
       hooks/        useBudget.ts
       types/        budget.types.ts
     dashboard/
       components/   SavingsChart.tsx, GlobalProgress.tsx
+      (pas de hooks/types propres — consomme uniquement le context global)
   context/
-      AppContext.tsx
-      AppReducer.ts
-      AppProvider.tsx
+      AppContext.tsx    ← définit le type AppContextType, createContext, useAppContext()
+      AppReducer.ts     ← fonction pure (state, action) => state + type AppAction
+      AppProvider.tsx   ← useReducer, useEffect sync localStorage, expose le context
   hooks/
-      useLocalStorage.ts
+      useLocalStorage.ts   ← custom hook générique useLocalStorage<T>
   pages/
       DashboardPage.tsx
       GoalsPage.tsx
@@ -50,30 +52,45 @@ src/
   router/
       index.tsx
   types/
-      common.types.ts
+      common.types.ts   ← StorageKey, ID utilities, types partagés entre features
 ```
+
+### Responsabilités des fichiers context/
+
+| Fichier | Responsabilité |
+|---------|----------------|
+| `AppContext.tsx` | Définit `AppContextType`, `AppState`, `createContext<AppContextType \| null>`, et exporte `useAppContext()` avec guard null |
+| `AppReducer.ts` | Fonction pure `appReducer(state, action) => state` + type `AppAction = GoalAction \| BudgetAction` |
+| `AppProvider.tsx` | Appelle `useReducer(appReducer, initialState)`, `useEffect` pour sync localStorage, wrap les enfants avec le Provider |
 
 ### Principe de séparation
 - Chaque feature est autonome : composants, hooks, types dans son propre dossier
 - Le context global est le seul point de partage entre features
 - Les composants UI partagés vivent dans `components/ui/`
+- `dashboard/` n'a pas de hooks/types propres car il consomme uniquement le context global
 
 ---
 
 ## 3. Types TypeScript
 
+### Convention `type` vs `interface`
+- **`interface`** : pour les formes d'objets (entités, props de composants)
+- **`type`** : pour les unions, aliases, discriminated unions, types génériques
+
+### Types Goals
+
 ```typescript
 // goal.types.ts
 interface Goal {
-  id: string
+  id: string                    // généré via crypto.randomUUID()
   name: string
   targetAmount: number
   currentAmount: number
   monthlyContribution: number
-  targetDate: string
+  targetDate: string            // ISO date string (YYYY-MM-DD)
   category: GoalCategory
   color: string
-  createdAt: string
+  createdAt: string             // ISO date string
 }
 
 type GoalCategory = 'vehicle' | 'travel' | 'tech' | 'housing' | 'other'
@@ -83,7 +100,11 @@ type GoalAction =
   | { type: 'UPDATE_GOAL'; payload: Goal }
   | { type: 'DELETE_GOAL'; payload: string }
   | { type: 'ADD_CONTRIBUTION'; payload: { goalId: string; amount: number } }
+```
 
+### Types Budget
+
+```typescript
 // budget.types.ts
 interface Budget {
   monthlyIncome: number
@@ -91,13 +112,26 @@ interface Budget {
 }
 
 interface FixedExpense {
-  id: string
+  id: string        // généré via crypto.randomUUID()
   label: string
   amount: number
 }
 
-// Clés localStorage typées
+type BudgetAction =
+  | { type: 'SET_INCOME'; payload: number }
+  | { type: 'ADD_EXPENSE'; payload: Omit<FixedExpense, 'id'> }
+  | { type: 'UPDATE_EXPENSE'; payload: FixedExpense }
+  | { type: 'DELETE_EXPENSE'; payload: string }
+```
+
+### Types communs
+
+```typescript
+// common.types.ts
 type StorageKey = 'budgetflow_goals' | 'budgetflow_budget'
+
+// Union de toutes les actions — utilisée dans AppReducer.ts
+type AppAction = GoalAction | BudgetAction
 ```
 
 ---
@@ -107,21 +141,81 @@ type StorageKey = 'budgetflow_goals' | 'budgetflow_budget'
 ### Pattern : Context + useReducer
 
 ```typescript
+// AppContext.tsx
 interface AppState {
   goals: Goal[]
   budget: Budget
 }
+
+// État initial par défaut
+const initialState: AppState = {
+  goals: [],
+  budget: {
+    monthlyIncome: 0,
+    fixedExpenses: [],
+  },
+}
 ```
 
-- `AppProvider` wrappe toute l'app
-- `AppReducer` centralise toutes les mutations de state
-- `useAppContext()` : hook custom avec guard null pour consommer le context
-- `useEffect` dans `AppProvider` : synchronisation automatique avec localStorage à chaque changement de state
+### Rôles
 
-### Valeurs calculées (exposées par le context)
-- `availableMonthly` = revenus − dépenses fixes − total contributions objectifs
+- `AppProvider` : appelle `useReducer(appReducer, initialState)`, hydrate depuis localStorage au mount, synchronise vers localStorage via `useEffect` à chaque changement de state
+- `AppReducer` : fonction pure qui délègue aux handlers goals/budget selon le type d'action
+- `useAppContext()` : hook custom avec guard null — lance une erreur explicite si utilisé hors du Provider
+
+### Stratégie localStorage (une seule source de vérité)
+
+`AppProvider` est le seul responsable de la persistance :
+```typescript
+// Hydratation au mount (une seule fois)
+useEffect(() => {
+  const saved = localStorage.getItem('budgetflow_goals')
+  if (saved) dispatch({ type: 'HYDRATE_GOALS', payload: JSON.parse(saved) })
+}, [])
+
+// Sync à chaque changement de state
+useEffect(() => {
+  localStorage.setItem('budgetflow_goals', JSON.stringify(state.goals))
+  localStorage.setItem('budgetflow_budget', JSON.stringify(state.budget))
+}, [state])
+```
+
+`useLocalStorage<T>` est utilisé **uniquement** dans `SettingsPage` pour l'export/import.
+
+### Valeurs calculées (exposées par le context via useMemo)
+- `availableMonthly` = revenus − somme dépenses fixes − totalAllocated
 - `totalAllocated` = somme des `monthlyContribution` de tous les objectifs
-- `monthsToGoal(goal)` : fonction utilitaire
+
+### Contrats des hooks feature
+
+```typescript
+// useGoals.ts — retourne
+interface UseGoalsReturn {
+  goals: Goal[]
+  addGoal: (goal: Omit<Goal, 'id' | 'createdAt'>) => void
+  updateGoal: (goal: Goal) => void
+  deleteGoal: (id: string) => void
+  addContribution: (goalId: string, amount: number) => void
+}
+
+// useBudget.ts — retourne
+interface UseBudgetReturn {
+  budget: Budget
+  availableMonthly: number
+  setIncome: (amount: number) => void
+  addExpense: (expense: Omit<FixedExpense, 'id'>) => void
+  updateExpense: (expense: FixedExpense) => void
+  deleteExpense: (id: string) => void
+}
+```
+
+### Utilitaires goals
+
+```typescript
+// features/goals/utils/goalCalculations.ts
+const monthsToGoal = (goal: Goal): number => { ... }
+const percentComplete = (goal: Goal): number => { ... }
+```
 
 ---
 
@@ -146,7 +240,7 @@ interface AppState {
 | Dashboard | `useAppContext()`, `useMemo` |
 | GoalsPage | `useGoals()`, `useState` (modal, formulaire) |
 | BudgetPage | `useBudget()`, `useCallback` (handlers) |
-| SettingsPage | `useLocalStorage()` (export/import) |
+| SettingsPage | `useLocalStorage<T>()`, `useRef` (input file import) |
 
 ---
 
@@ -155,16 +249,18 @@ interface AppState {
 | Concept | Où dans le projet |
 |---------|------------------|
 | `useState` | Formulaires, modals, toggle UI |
-| `useEffect` | Sync localStorage, calculs on mount |
+| `useEffect` | Sync localStorage dans AppProvider |
 | `useContext` | Consommation AppContext partout |
 | `useReducer` | AppReducer — state global |
-| `useMemo` | Calculs dérivés dans Dashboard |
+| `useMemo` | Calculs dérivés (availableMonthly, totalAllocated) |
 | `useCallback` | Handlers dans BudgetPage, GoalForm |
+| `useRef` | Input file (import JSON) dans SettingsPage |
+| `React.memo` | GoalCard — évite re-renders inutiles |
 | Custom hooks | `useLocalStorage<T>`, `useGoals`, `useBudget` |
-| Interfaces | Goal, Budget, FixedExpense |
+| Interfaces | Goal, Budget, FixedExpense, props composants |
 | Types génériques | `useLocalStorage<T>` |
-| Discriminated unions | `GoalAction` dans le reducer |
-| `type` vs `interface` | Utilisés de façon cohérente |
+| Discriminated unions | `GoalAction`, `BudgetAction`, `AppAction` |
+| `type` vs `interface` | Convention documentée (objets=interface, unions=type) |
 | react-router-dom | Routes, `<Outlet>`, `useNavigate` |
 | recharts | Graphique progression Dashboard |
 
@@ -172,17 +268,44 @@ interface AppState {
 
 ## 8. Persistance des données
 
-- **Lecture/écriture :** `useLocalStorage<T>` custom hook générique
+- **Sync state → localStorage :** géré exclusivement dans `AppProvider` via `useEffect`
 - **Clés :** `budgetflow_goals`, `budgetflow_budget`
-- **Export :** Téléchargement d'un fichier `budgetflow-export.json`
-- **Import :** Lecture fichier JSON + validation de structure avant hydratation du state
-- **Reset :** Suppression des clés localStorage + reset du state
+- **Export :** `useLocalStorage<T>` dans SettingsPage → téléchargement `budgetflow-export.json`
+- **Import :** lecture fichier via `useRef` + input file → validation de la structure (vérifier présence des clés `goals` et `budget`) → `dispatch(HYDRATE)` si valide
+- **Reset :** `localStorage.clear()` + dispatch vers state initial
+
+### Validation import JSON
+Avant d'hydrater le state depuis un fichier importé :
+```typescript
+const isValidExport = (data: unknown): data is AppState =>
+  typeof data === 'object' &&
+  data !== null &&
+  'goals' in data &&
+  'budget' in data &&
+  Array.isArray((data as AppState).goals)
+```
 
 ---
 
-## 9. Décisions techniques
+## 9. Validation des formulaires
+
+Gestion native avec `useState` (pas de bibliothèque externe) :
+
+| Champ | Règle |
+|-------|-------|
+| `name` | Requis, min 2 caractères |
+| `targetAmount` | Requis, > 0 |
+| `monthlyContribution` | Requis, > 0, ≤ targetAmount |
+| `targetDate` | Requis, doit être dans le futur |
+| `monthlyIncome` | Requis, ≥ 0 |
+| `fixedExpense.amount` | Requis, > 0 |
+
+---
+
+## 10. Décisions techniques
 
 - **Pas de backend** : tout en local, suffisant pour l'objectif d'apprentissage
-- **Pas de bibliothèque de formulaires** (React Hook Form, Formik) : gestion native avec `useState` pour maximiser l'apprentissage
+- **Pas de bibliothèque de formulaires** (React Hook Form, Formik) : gestion native avec `useState`
 - **Pas de bibliothèque de state** (Redux, Zustand) : Context + useReducer natif React
-- **TailwindCSS** : classes utilitaires uniquement, pas de CSS custom sauf si nécessaire
+- **TailwindCSS** : classes utilitaires uniquement
+- **Génération d'IDs** : `crypto.randomUUID()` (natif navigateur, pas de dépendance externe)
