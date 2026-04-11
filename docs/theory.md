@@ -498,6 +498,29 @@ const goal2: Goal = { id: '2', name: 'Voyage', ..., deadlineDate: '2026-12-01', 
 | Liste d'objets | `Type[]` |
 | Valeur numérique contrainte | `number` (pas `string`) |
 
+### extends — hériter d'un type existant
+
+```typescript
+interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  label?: string
+  error?: string
+}
+```
+
+`extends` signifie : "prends tous les attributs d'un `<input>` HTML, et ajoute mes propriétés custom". Plus besoin de lister `type`, `placeholder`, `value`, `onChange`... manuellement.
+
+### Rest operator sur les props
+
+```typescript
+function Input({ label, error, ...props }: InputProps) {
+  return <input {...props} className={`... ${props.className ?? ''}`} />
+}
+```
+
+`...props` capture tout ce qui n'est pas destructuré (`label`, `error`), et `{...props}` le passe à l'élément HTML. C'est le pattern standard pour les composants wrapper.
+
+**Piège classique** — si tu mets `className` fixe sans fusionner avec `props.className`, les classes custom passées par le parent sont écrasées.
+
 ---
 
 ## 11. TypeScript — Types & Unions
