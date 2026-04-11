@@ -461,17 +461,15 @@ interface MyInterface {
 ### Exemple dans BudgetFlow
 
 ```typescript
-// goal.types.ts
-interface Goal {
+// features/goals/types/goal.type.ts
+export interface Goal {
   id: string
   name: string
-  targetAmount: number
-  currentAmount: number
-  monthlyContribution: number
-  targetDate: string
-  category: GoalCategory
-  color: string
-  createdAt: string
+  description: string
+  targetSavings: number
+  currentSavings: number
+  deadlineDate?: string   // ← optionnel avec ?
+  status: GoalStatus      // ← référence au type séparé
 }
 
 // Props d'un composant
@@ -481,6 +479,24 @@ interface GoalCardProps {
   onDelete: (id: string) => void
 }
 ```
+
+### Propriété optionnelle
+Le `?` après le nom d'une propriété la rend optionnelle — TypeScript acceptera un objet `Goal` avec ou sans `deadlineDate`.
+
+```typescript
+const goal1: Goal = { id: '1', name: 'Moto', ..., status: 'active' }              // ✅ sans deadlineDate
+const goal2: Goal = { id: '2', name: 'Voyage', ..., deadlineDate: '2026-12-01', status: 'active' } // ✅ avec
+```
+
+### Tableau de types — quand utiliser quoi
+
+| Situation | Outil |
+|-----------|-------|
+| Objet avec des propriétés | `interface` |
+| Choix parmi des valeurs fixes | `type` + union `\|` |
+| Propriété optionnelle | `?` |
+| Liste d'objets | `Type[]` |
+| Valeur numérique contrainte | `number` (pas `string`) |
 
 ---
 
@@ -505,14 +521,27 @@ type GoalName = Pick<Goal, 'name' | 'color'>    // seulement name et color
 ### Exemple dans BudgetFlow
 
 ```typescript
-// goal.types.ts
-type GoalCategory = 'vehicle' | 'travel' | 'tech' | 'housing' | 'other'
+// features/goals/types/goal.type.ts
+export type GoalStatus = 'active' | 'completed' | 'paused'
+```
 
-// StorageKey contraint les strings acceptées par useLocalStorage
+**Pourquoi un `type` séparé et pas inline dans l'interface ?**
+Parce que d'autres parties du code (filtres, badges de couleur, etc.) pourront importer `GoalStatus` directement sans dépendre de toute l'interface `Goal`.
+
+```typescript
+// Utilisation dans un autre composant
+import type { GoalStatus } from '../types/goal.type'
+
+function StatusBadge({ status }: { status: GoalStatus }) { ... }
+```
+
+**Utility types** — intégrés à TypeScript, très utiles :
+
+```typescript
 type StorageKey = 'budgetflow_goals' | 'budgetflow_budget'
 
-// Omit pour le formulaire de création (sans id ni createdAt)
-type NewGoalPayload = Omit<Goal, 'id' | 'createdAt'>
+// Omit pour le formulaire de création (sans id)
+type NewGoalPayload = Omit<Goal, 'id'>
 ```
 
 ---

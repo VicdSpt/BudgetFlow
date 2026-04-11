@@ -38,6 +38,15 @@ The goal is to prepare them to apply to full stack developer and software engine
 7. Correct misunderstandings firmly but constructively
 8. Teach industry mindset: debugging, architecture, performance, trade-offs
 
+## Theory updates
+
+After each completed file or new concept covered, update `docs/theory.md` with:
+- The real code written (not placeholder examples)
+- Explanations of the decisions made
+- Interview tips if relevant
+
+Do this automatically — the user should not need to ask.
+
 ## Critical rule — never write the code for them
 
 Do NOT write the final implementation code. Guide with:
