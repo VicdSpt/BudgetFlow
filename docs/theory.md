@@ -535,6 +535,36 @@ import type { GoalStatus } from '../types/goal.type'
 function StatusBadge({ status }: { status: GoalStatus }) { ... }
 ```
 
+### Importer des types entre fichiers
+
+```typescript
+// Depuis un seul fichier — une ligne
+import { GlobalBudget, FixedExpense } from "../features/budget/types/budget.type"
+
+// Depuis plusieurs fichiers — une ligne par fichier
+import { Goal } from "../features/goals/types/goal.type"
+import { GlobalBudget } from "../features/budget/types/budget.type"
+```
+
+### Exemple réel — common.type.ts
+
+```typescript
+import { Goal } from "../features/goals/types/goal.type"
+import { GlobalBudget } from "../features/budget/types/budget.type"
+
+export type StorageKey = "budgetflow_goals" | "budgetflow_budget"
+
+export type AppState = {
+  goals: Goal[]
+  budget: GlobalBudget
+}
+
+export type AppAction = never // sera complété lors du reducer
+```
+
+**Pourquoi un préfixe `budgetflow_` sur les clés localStorage ?**
+Pour éviter les collisions si d'autres apps tournent sur le même domaine. `"goals"` est trop générique.
+
 **Utility types** — intégrés à TypeScript, très utiles :
 
 ```typescript
