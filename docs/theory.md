@@ -488,6 +488,43 @@ const goal1: Goal = { id: '1', name: 'Moto', ..., status: 'active' }            
 const goal2: Goal = { id: '2', name: 'Voyage', ..., deadlineDate: '2026-12-01', status: 'active' } // ✅ avec
 ```
 
+### Style dynamique avec `style` prop
+
+Tailwind génère les classes au build — tu ne peux pas écrire `w-{value}%` dynamiquement. Pour du CSS calculé à l'exécution, on utilise l'attribut `style` :
+
+```tsx
+// ❌ Ne fonctionne pas — Tailwind ne voit pas cette classe au build
+<div className={`w-${value}%`} />
+
+// ✅ Correct — style inline pour les valeurs dynamiques
+<div style={{ width: `${value}%` }} />
+```
+
+### Exemple réel — ProgressBar.tsx
+
+```typescript
+interface ProgressBarProps {
+  value: number    // 0 à 100
+  label?: string
+}
+
+export default function ProgressBar({ value, label }: ProgressBarProps) {
+  return (
+    <div className="w-full bg-gray-200 rounded-full">
+      {label && <p className="text-sm text-gray-600 mb-1">{label}</p>}
+      <div
+        className="bg-blue-600 text-xs font-medium text-white text-center p-0.5 rounded-full h-4 flex items-center justify-center"
+        style={{ width: `${value}%` }}
+      >
+        {value}%
+      </div>
+    </div>
+  )
+}
+```
+
+**Règle** : Tailwind pour les styles statiques, `style` prop pour les valeurs dynamiques.
+
 ### Tableau de types — quand utiliser quoi
 
 | Situation | Outil |
