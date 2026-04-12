@@ -535,6 +535,53 @@ export default function ProgressBar({ value, label }: ProgressBarProps) {
 | Liste d'objets | `Type[]` |
 | Valeur numérique contrainte | `number` (pas `string`) |
 
+### React Portals
+
+Un portal permet de rendre un composant **en dehors de son arbre DOM parent**, directement dans un nœud cible (généralement `document.body`).
+
+**Pourquoi ?** Les modales, tooltips, et dropdowns doivent échapper aux contraintes CSS (`overflow: hidden`, `z-index`) de leurs parents.
+
+```typescript
+import ReactDOM from "react-dom"
+
+ReactDOM.createPortal(
+  <div>contenu à téléporter</div>,  // ce qu'on rend
+  document.body                      // où on le rend
+)
+```
+
+### Exemple réel — Modal.tsx
+
+```typescript
+import ReactDOM from "react-dom"
+
+interface ModalProps {
+  isOpen: boolean
+  onClose: () => void
+  children: React.ReactNode
+  title?: string
+}
+
+export default function Modal({ isOpen, onClose, children, title }: ModalProps) {
+  if (!isOpen) return null  // ← early return, pas de DOM inutile
+
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 min-w-80 max-w-lg w-full">
+        <div className="flex justify-between items-center mb-4">
+          {title && <h2 className="text-xl font-bold">{title}</h2>}
+          <button onClick={onClose} className="text-gray-500 hover:text-black text-2xl">X</button>
+        </div>
+        <div>{children}</div>
+      </div>
+    </div>,
+    document.body
+  )
+}
+```
+
+> **En interview :** On peut te demander pourquoi utiliser un portal pour une modal. Réponse : pour échapper aux contraintes CSS du parent (overflow, z-index) et garantir que la modal s'affiche toujours au-dessus de tout.
+
 ### extends — hériter d'un type existant
 
 ```typescript
