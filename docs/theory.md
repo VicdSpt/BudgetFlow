@@ -824,36 +824,43 @@ Composant
   → Tous les composants consommant useAppContext() re-rendent avec le nouveau state
 ```
 
-### Exemple complet
+### Exemple réel — AppProvider.tsx
 
 ```typescript
-// AppProvider.tsx
+import { useReducer, useEffect } from "react"
+import AppContext from "./AppContext"
+import { appReducer } from "./AppReducer"
+import { AppState } from "../types/common.type"
+
+const initialState: AppState = {
+  goals: [],
+  budget: {
+    income: 0,
+    spendingList: []
+  }
+}
+
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState)
 
-  // Sync localStorage
   useEffect(() => {
-    localStorage.setItem('budgetflow_goals', JSON.stringify(state.goals))
-    localStorage.setItem('budgetflow_budget', JSON.stringify(state.budget))
+    localStorage.setItem("budgetflow_goals", JSON.stringify(state.goals))
+    localStorage.setItem("budgetflow_budget", JSON.stringify(state.budget))
   }, [state])
 
-  const totalAllocated = useMemo(
-    () => state.goals.reduce((sum, g) => sum + g.monthlyContribution, 0),
-    [state.goals]
-  )
-
-  const availableMonthly = useMemo(
-    () => state.budget.monthlyIncome - state.budget.fixedExpenses.reduce((s, e) => s + e.amount, 0) - totalAllocated,
-    [state.budget, totalAllocated]
-  )
-
   return (
-    <AppContext.Provider value={{ state, dispatch, totalAllocated, availableMonthly }}>
+    <AppContext.Provider value={{ state, dispatch }}>
       {children}
     </AppContext.Provider>
   )
 }
 ```
+
+**Rôle de chaque partie :**
+- `initialState` — valeur du state au démarrage (listes vides, budget à 0)
+- `useReducer` — branche le reducer sur le state, retourne `state` et `dispatch`
+- `useEffect([state])` — se déclenche à chaque changement de state et sauvegarde dans localStorage
+- `AppContext.Provider value={{state, dispatch}}` — expose state et dispatch à tous les composants enfants
 
 ---
 
