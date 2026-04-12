@@ -181,6 +181,43 @@ const { state, dispatch } = useAppContext()
 
 > **En interview :** On peut te demander ce qu'est le "prop drilling" et pourquoi Context résout ce problème. C'est le passage de props de parent en enfant en enfant juste pour atteindre un composant profond.
 
+### Exemple réel — AppContext.tsx
+
+```typescript
+import { createContext, useContext } from "react"
+import { AppState, AppAction } from "../types/common.type"
+
+// 1. Le type de ce que le context expose
+interface AppContextType {
+  state: AppState
+  dispatch: React.Dispatch<AppAction>
+}
+
+// 2. Création du context — null par défaut (avant que le Provider existe)
+const AppContext = createContext<AppContextType | null>(null)
+
+// 3. Hook custom avec guard de sécurité
+export const useAppContext = (): AppContextType => {
+  const context = useContext(AppContext)
+  if (!context) {
+    throw new Error("useAppContext must be used within AppProvider")
+  }
+  return context
+}
+
+export default AppContext
+```
+
+**Pourquoi `createContext<AppContextType | null>(null)` ?**
+Si on mettait une valeur par défaut, un composant hors du Provider recevrait cette valeur silencieusement — bug invisible. Avec `null` + guard, l'erreur est immédiate et explicite.
+
+**Pourquoi un hook custom `useAppContext` ?**
+Deux raisons :
+1. Le guard — protection si le Provider est absent
+2. Simplicité — les composants écrivent `useAppContext()` plutôt que `useContext(AppContext)` partout
+
+**`React.Dispatch<AppAction>`** — c'est le type TypeScript de la fonction `dispatch` retournée par `useReducer`. Elle n'accepte que des objets de type `AppAction`.
+
 ---
 
 ## 4. useReducer
