@@ -242,37 +242,49 @@ function reducer(state: State, action: Action): State {
 }
 ```
 
-### Exemple dans BudgetFlow
+### Exemple réel — AppReducer.ts
 
 ```typescript
-// AppReducer.ts
-function appReducer(state: AppState, action: AppAction): AppState {
+import { AppState, AppAction } from "../types/common.type"
+
+export function appReducer(state: AppState, action: AppAction): AppState {
   switch (action.type) {
-    case 'ADD_GOAL':
-      const newGoal: Goal = {
-        ...action.payload,
-        id: crypto.randomUUID(),
-        createdAt: new Date().toISOString(),
-      }
-      return { ...state, goals: [...state.goals, newGoal] }
+    case "ADD_GOAL":
+      return { ...state, goals: [...state.goals, { ...action.payload, id: crypto.randomUUID() }] }
 
-    case 'DELETE_GOAL':
-      return {
-        ...state,
-        goals: state.goals.filter(g => g.id !== action.payload),
-      }
+    case "DELETE_GOAL":
+      return { ...state, goals: state.goals.filter(goal => goal.id !== action.payload) }
 
-    case 'SET_INCOME':
-      return {
-        ...state,
-        budget: { ...state.budget, monthlyIncome: action.payload },
-      }
+    case "UPDATE_GOAL":
+      return { ...state, goals: state.goals.map(goal => goal.id === action.payload.id ? action.payload : goal) }
 
     default:
       return state
   }
 }
 ```
+
+**Analogie liste de courses :**
+
+Tu as une liste de courses : `["oeufs", "pain"]`. Tu veux la modifier sans toucher à l'originale.
+
+```
+ADD_GOAL    → "j'ajoute lait"
+              nouvelle liste : ["oeufs", "pain", "lait"]
+
+DELETE_GOAL → "je supprime pain"
+              filter garde tout SAUF "pain" : ["oeufs", "lait"]
+
+UPDATE_GOAL → "je change lait par lait demi-écrémé"
+              map parcourt tout : quand il trouve "lait", il écrit "lait demi-écrémé"
+              nouvelle liste : ["oeufs", "lait demi-écrémé"]
+```
+
+Dans le code, les goals remplacent les items de la liste — même logique, même méthodes.
+
+**Règle fondamentale du reducer** : ne jamais modifier le state directement. Toujours retourner un nouvel objet avec `{ ...state, ... }`. React détecte les changements par **référence** — si tu modifies l'objet existant, React ne voit pas de changement et ne re-rend pas.
+
+**`crypto.randomUUID()`** — intégré au navigateur, génère un identifiant unique universel (UUID) sans librairie externe.
 
 > **En interview :** On te demande souvent `useState` vs `useReducer`. Règle simple : `useState` pour des valeurs simples/indépendantes, `useReducer` quand les transitions d'état sont complexes ou quand plusieurs valeurs évoluent ensemble.
 
