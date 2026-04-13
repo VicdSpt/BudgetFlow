@@ -11,6 +11,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
         case "UPDATE_GOAL":
             return { ...state, goals: state.goals.map(goal => goal.id === action.payload.id ? action.payload : goal) }
+        
+        case "HYDRATE_GOALS":
+            return { ...state, goals: action.payload }
+        
+        case "HYDRATE_BUDGET":
+            return { ...state, budget: action.payload }
 
         default:
             return state

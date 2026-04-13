@@ -11,3 +11,5 @@ export type AppAction =
   | { type: 'ADD_GOAL'; payload: Omit<Goal, "id"> }
   | { type: 'DELETE_GOAL'; payload: string }
   | { type: 'UPDATE_GOAL'; payload: Goal }
+  | { type: 'HYDRATE_GOALS'; payload: Goal[] }
+  | { type: 'HYDRATE_BUDGET'; payload: GlobalBudget }

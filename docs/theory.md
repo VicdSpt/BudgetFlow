@@ -133,6 +133,92 @@ useEffect(() => {
 
 ---
 
+## 2b. useEffect — Hydratation localStorage
+
+### Concept
+"Hydrater" un state signifie **remplir un état vide avec des données existantes** au démarrage de l'app.
+
+**Analogie :** C'est comme ouvrir une app de notes. Au démarrage, l'app crée une page blanche (`initialState`). Puis immédiatement, elle va chercher tes notes sauvegardées et les charge. Tu ne vois jamais la page blanche.
+
+### Pattern complet dans BudgetFlow
+
+```typescript
+// AppProvider.tsx
+
+// 1. Lecture localStorage au démarrage (une seule fois)
+useEffect(() => {
+  const savedGoals = localStorage.getItem("budgetflow_goals")
+  const savedBudget = localStorage.getItem("budgetflow_budget")
+
+  if (savedGoals) dispatch({ type: "HYDRATE_GOALS", payload: JSON.parse(savedGoals) })
+  if (savedBudget) dispatch({ type: "HYDRATE_BUDGET", payload: JSON.parse(savedBudget) })
+}, [])  // ← [] = une seule fois au montage
+
+// 2. Sauvegarde localStorage à chaque changement de state
+useEffect(() => {
+  localStorage.setItem("budgetflow_goals", JSON.stringify(state.goals))
+  localStorage.setItem("budgetflow_budget", JSON.stringify(state.budget))
+}, [state])  // ← se déclenche à chaque fois que state change
+```
+
+```typescript
+// AppReducer.ts — les actions d'hydratation remplacent le state vide
+case "HYDRATE_GOALS":
+  return { ...state, goals: action.payload }
+
+case "HYDRATE_BUDGET":
+  return { ...state, budget: action.payload }
+```
+
+### Sans vs avec hydratation
+
+| Situation | Résultat au refresh |
+|-----------|---------------------|
+| Sans hydratation | `goals: []` — toutes les données perdues |
+| Avec hydratation | Goals restaurés depuis localStorage |
+
+> **En interview :** On peut te demander comment persister des données sans backend. Réponse : `localStorage` + initialisation directe via `useReducer(reducer, getInitialState())`.
+
+### Pattern recommandé — lazy initializer
+
+Plutôt qu'un `useEffect` d'hydratation (qui crée une race condition), initialise directement le state depuis localStorage :
+
+```typescript
+const getInitialState = (): AppState => {
+  try {
+    const savedGoals = localStorage.getItem("budgetflow_goals")
+    const savedBudget = localStorage.getItem("budgetflow_budget")
+    return {
+      goals: savedGoals ? JSON.parse(savedGoals) : [],
+      budget: savedBudget ? JSON.parse(savedBudget) : { income: 0, spendingList: [] }
+    }
+  } catch {
+    return { goals: [], budget: { income: 0, spendingList: [] } }
+  }
+}
+
+// Dans AppProvider :
+const [state, dispatch] = useReducer(appReducer, getInitialState())
+//                                                              ↑ parenthèses obligatoires
+```
+
+### ⚠️ Bug classique — `useReducer` sans parenthèses
+
+```typescript
+// ❌ FAUX — passe la fonction comme initialiseur lazy (3ème argument implicite)
+//    le 2ème argument devient undefined → state.goals = undefined → crash
+const [state, dispatch] = useReducer(appReducer, getInitialState)
+
+// ✅ CORRECT — appelle la fonction et passe le résultat comme état initial
+const [state, dispatch] = useReducer(appReducer, getInitialState())
+```
+
+**Symptôme :** `TypeError: Cannot read properties of undefined (reading 'map')` — un tableau du state est `undefined`.
+**Cause :** Le state entier est `undefined` car `useReducer` n'a pas reçu d'état initial valide.
+**Fix :** Ajouter les parenthèses `()` pour appeler la fonction.
+
+---
+
 ## 3. useContext
 
 ### Théorie
