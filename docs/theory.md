@@ -491,6 +491,48 @@ function useGoals(): UseGoalsReturn {
 
 ---
 
+## 9b. Custom Hook — useGoals
+
+### Théorie
+Un custom hook de feature suit toujours le même pattern :
+1. Lire le state global via `useAppContext()`
+2. Créer des fonctions qui wrappent `dispatch` avec des noms lisibles
+3. Retourner les données et les actions
+
+**Pourquoi wrapper `dispatch` ?**
+Les composants ne devraient pas connaître les détails du reducer. Ils appellent `addGoal(goal)` — propre et lisible. Sans hook, ils devraient écrire `dispatch({ type: "ADD_GOAL", payload: goal })` partout.
+
+### Exemple réel — useGoals.ts
+
+```typescript
+import { useAppContext } from "../../../context/AppContext"
+import type { Goal } from "../types/goal.type"
+
+export function useGoals() {
+  const { state, dispatch } = useAppContext()
+
+  const addGoal = (goal: Omit<Goal, "id">) => {
+    dispatch({ type: "ADD_GOAL", payload: goal })
+  }
+
+  const updateGoal = (goal: Goal) => {
+    dispatch({ type: "UPDATE_GOAL", payload: goal })
+  }
+
+  const deleteGoal = (id: string) => {
+    dispatch({ type: "DELETE_GOAL", payload: id })
+  }
+
+  return { goals: state.goals, addGoal, updateGoal, deleteGoal }
+}
+```
+
+**`Omit<Goal, "id">`** — `addGoal` reçoit un goal sans `id` car l'id est généré dans le reducer avec `crypto.randomUUID()`. Le composant ne doit pas gérer ça.
+
+> **En interview :** On peut te demander pourquoi créer un custom hook plutôt que d'appeler `dispatch` directement dans les composants. Réponse : séparation des responsabilités — les composants gèrent l'UI, les hooks gèrent la logique métier.
+
+---
+
 ## 10. TypeScript — Interfaces
 
 ### Théorie
