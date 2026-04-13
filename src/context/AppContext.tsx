@@ -1,5 +1,5 @@
 import { createContext, useContext } from "react"
-import { AppState, AppAction } from "../types/common.type"
+import type { AppState, AppAction } from "../types/common.type"
 
 interface AppContextType {
     state: AppState;

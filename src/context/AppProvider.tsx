@@ -1,7 +1,7 @@
 import { useReducer, useEffect } from "react"
 import AppContext from "./AppContext"
 import { appReducer } from "./AppReducer"
-import { AppState } from "../types/common.type"
+import type { AppState } from "../types/common.type"
 
 const initialState: AppState = {
     goals: [],

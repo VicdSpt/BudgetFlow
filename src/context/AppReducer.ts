@@ -1,4 +1,4 @@
-import { AppState, AppAction } from "../types/common.type";
+import type { AppState, AppAction } from "../types/common.type";
 
 export function appReducer(state: AppState, action: AppAction): AppState {
 
