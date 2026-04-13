@@ -3,14 +3,13 @@ import type { GoalStatus } from "../types/goal.type";
 import { useGoals } from "../hooks/useGoals";
 import Input from "../../../components/ui/Input";
 import Button from "../../../components/ui/Button";
-import { Form } from "react-router-dom";
 
-interface GoalFormProps{
+interface GoalFormProps {
     onClose: () => void
 }
 
-export default function GoalForm({onClose}: GoalFormProps) {
-    const {addGoal} = useGoals()
+export default function GoalForm({ onClose }: GoalFormProps) {
+    const { addGoal } = useGoals()
 
     const [formData, setFormData] = useState({
         name: "",
@@ -23,9 +22,30 @@ export default function GoalForm({onClose}: GoalFormProps) {
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault()
+        addGoal(formData)
+        setFormData({
+            name: "",
+            targetSavings: 0,
+            currentSavings: 0,
+            deadlineDate: "",
+            status: "active" as GoalStatus,
+            description: ""
+        })
+        onClose()
     }
-    
-  return (
-    <Form></Form>
-  )
+
+    return (
+        <form onSubmit={handleSubmit}>
+
+            <Input label="Nom" value={formData.name} onChange={(event) => setFormData({ ...formData, name: event.target.value})} />
+            <Input label="Montant Cible" type="number" value={formData.targetSavings} onChange={(event) => setFormData({ ...formData, targetSavings: parseFloat(event.target.value)})}></Input>
+            <Input label="Economies" type="number" value={formData.currentSavings} onChange={(event) => setFormData({ ...formData, currentSavings: parseFloat(event.target.value)})}></Input>
+            <Input label="Deadline" type="date" value={formData.deadlineDate} onChange={(event) => setFormData({ ...formData, deadlineDate: event.target.value})}></Input>
+            <Input label="Status" value={formData.status} onChange={(event) => setFormData({ ...formData, status: event.target.value as GoalStatus})}></Input>
+            <Input label="Description" value={formData.description} onChange={(event) => setFormData({ ...formData, description: event.target.value})}></Input>
+            
+            <Button type="submit" variant="primary">Ajouter</Button>
+
+        </form>
+    )
 }
