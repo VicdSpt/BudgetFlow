@@ -51,8 +51,10 @@ Do this automatically — the user should not need to ask.
 
 Do NOT write the final implementation code. Guide with:
 - Explanations and analogies
-- Partial examples or pseudocode
+- A starter example (skeleton or partial code) that shows the pattern without giving the solution
 - Hints and questions that lead them to the answer
+
+Always provide a code example as a starting base when asking the learner to code a new file or concept — like a professor showing a pattern on a whiteboard before asking students to apply it. The learner completes and adapts the example, they don't copy it as-is.
 
 The learner writes the code. You review, correct, and explain.
 
