@@ -38,11 +38,16 @@ export default function GoalForm({ onClose }: GoalFormProps) {
         <form onSubmit={handleSubmit}>
 
             <Input label="Nom" value={formData.name} onChange={(event) => setFormData({ ...formData, name: event.target.value})} />
-            <Input label="Montant Cible" type="number" value={formData.targetSavings} onChange={(event) => setFormData({ ...formData, targetSavings: parseFloat(event.target.value)})}></Input>
-            <Input label="Economies" type="number" value={formData.currentSavings} onChange={(event) => setFormData({ ...formData, currentSavings: parseFloat(event.target.value)})}></Input>
-            <Input label="Deadline" type="date" value={formData.deadlineDate} onChange={(event) => setFormData({ ...formData, deadlineDate: event.target.value})}></Input>
-            <Input label="Status" value={formData.status} onChange={(event) => setFormData({ ...formData, status: event.target.value as GoalStatus})}></Input>
-            <Input label="Description" value={formData.description} onChange={(event) => setFormData({ ...formData, description: event.target.value})}></Input>
+
+            <Input label="Montant Cible" type="number" value={formData.targetSavings} onChange={(event) => setFormData({ ...formData, targetSavings: parseFloat(event.target.value)})} />
+
+            <Input label="Economies" type="number" value={formData.currentSavings} onChange={(event) => setFormData({ ...formData, currentSavings: parseFloat(event.target.value)})} />
+
+            <Input label="Deadline" type="date" value={formData.deadlineDate} onChange={(event) => setFormData({ ...formData, deadlineDate: event.target.value})} />
+
+            <Input label="Status" value={formData.status} onChange={(event) => setFormData({ ...formData, status: event.target.value as GoalStatus})} />
+
+            <Input label="Description" value={formData.description} onChange={(event) => setFormData({ ...formData, description: event.target.value})} />
             
             <Button type="submit" variant="primary">Ajouter</Button>
 
