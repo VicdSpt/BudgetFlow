@@ -18,6 +18,14 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         case "HYDRATE_BUDGET":
             return { ...state, budget: action.payload }
 
+        case "SET_INCOME":
+            return { ...state, budget: { ...state.budget, income: action.payload } }
+        
+        case "ADD_EXPENSE":
+            return { ...state, budget: { ...state.budget, spendingList: [...state.budget.spendingList, { ...action.payload, id: crypto.randomUUID() }] } }
+        
+        case "DELETE_EXPENSE":
+            return { ...state, budget: { ...state.budget, spendingList: state.budget.spendingList.filter(expense => expense.id !== action.payload) } }
         default:
             return state
     }
