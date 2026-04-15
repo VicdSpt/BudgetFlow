@@ -1,6 +1,6 @@
 import type { Goal } from "../types/goal.type"
 import ProgressBar from "../../../components/ui/ProgressBar"
-import { percentageComplete } from "../utils/goalCalculation"
+import { percentageComplete, monthsToGoal } from "../utils/goalCalculation"
 import Button from "../../../components/ui/Button"
 
 interface GoalCardProps{
@@ -11,6 +11,7 @@ interface GoalCardProps{
 
 export default function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
   const percent = percentageComplete(goal.currentSavings, goal.targetSavings)
+  const months = goal.monthlyContribution ? monthsToGoal(goal.currentSavings, goal.targetSavings, goal.monthlySavings) : null
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col gap-4">
@@ -29,13 +30,19 @@ export default function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
       <div>
         <div className="flex justify-between text-sm text-slate-500 mb-2">
           <span>{goal.currentSavings}€ épargnés</span>
-          <span>objectif : {goal.targetSavings}€</span>
+          <span>objectif: {goal.targetSavings}€</span>
         </div>
         <ProgressBar value={percent} />
       </div>
 
       {goal.deadlineDate && (
-        <p className="text-xs text-slate-400">Échéance : {goal.deadlineDate}</p>
+        <p className="text-xs text-slate-400">Échéance: {goal.deadlineDate}</p>
+      )}
+
+      {months !== null ? (
+        <p className="text-xs text-slate-500">{months} mois restants</p>
+      ) : (
+        <p className="text-xs text-amber-500">Renseigne une contribution mensuelle</p>
       )}
 
       <div className="flex justify-end gap-2">
