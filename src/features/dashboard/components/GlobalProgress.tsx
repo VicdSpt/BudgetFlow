@@ -16,6 +16,15 @@ export default function GlobalProgress() {
         <p>Revenus: {state.budget.income}</p>
         <p>Dépenses: {totalExpenses}</p>
         <p>Disponible: {available}</p>
+
+        <div>
+            {state.goals.map(goal => (
+                <div key={goal.id}>
+                    <p>{goal.name}</p>
+                    <ProgressBar value={percentageComplete(goal.currentSavings, goal.targetSavings)} label={goal.name} />
+                </div>
+            ))}
+        </div>
     </div>
   )
 }
