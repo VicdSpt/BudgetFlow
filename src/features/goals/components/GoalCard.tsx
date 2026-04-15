@@ -3,15 +3,15 @@ import ProgressBar from "../../../components/ui/ProgressBar"
 import { percentageComplete, monthsToGoal } from "../utils/goalCalculation"
 import Button from "../../../components/ui/Button"
 
-interface GoalCardProps{
-    goal: Goal;
-    onEdit: (goal: Goal) => void;
-    onDelete: (id: string) => void
+interface GoalCardProps {
+  goal: Goal;
+  onEdit: (goal: Goal) => void;
+  onDelete: (id: string) => void
 }
 
 export default function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
   const percent = percentageComplete(goal.currentSavings, goal.targetSavings)
-  const months = goal.monthlyContribution ? monthsToGoal(goal.currentSavings, goal.targetSavings, goal.monthlySavings) : null
+  const months = goal.monthlyContribution ? monthsToGoal(goal.currentSavings, goal.targetSavings, goal.monthlyContribution) : null
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col gap-4">
@@ -34,6 +34,11 @@ export default function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
         </div>
         <ProgressBar value={percent} />
       </div>
+
+      {goal.monthlyContribution && (
+        <p className="text-xs text-slate-500">{goal.monthlyContribution}€/mois</p>
+      )}
+
 
       {goal.deadlineDate && (
         <p className="text-xs text-slate-400">Échéance: {goal.deadlineDate}</p>
