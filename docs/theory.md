@@ -1038,4 +1038,195 @@ export const router = createBrowserRouter([
 
 ---
 
+## 16. Formulaire en mode création / édition
+
+### Théorie
+Un formulaire React peut fonctionner en deux modes selon une prop optionnelle. Si le goal est fourni → édition (pré-rempli), sinon → création (vide).
+
+### Optional chaining `?.` et Nullish coalescing `??`
+
+```typescript
+goal?.name      // accède à name seulement si goal existe — sinon undefined
+goal?.name ?? ""  // si goal.name est undefined/null → retourne ""
+```
+
+Sans `?.`, si `goal` est `undefined`, JavaScript crashe : `Cannot read property 'name' of undefined`.
+
+### Exemple réel — GoalForm.tsx (mode dual)
+
+```typescript
+interface GoalFormProps {
+  onClose: () => void
+  goal?: Goal  // optionnel — présent en mode édition
+}
+
+export default function GoalForm({ onClose, goal }: GoalFormProps) {
+  const { addGoal, updateGoal } = useGoals()
+
+  const [formData, setFormData] = useState({
+    name: goal?.name ?? "",
+    targetSavings: goal?.targetSavings ?? 0,
+    currentSavings: goal?.currentSavings ?? 0,
+    deadlineDate: goal?.deadlineDate ?? "",
+    status: goal?.status ?? "active" as GoalStatus,
+    description: goal?.description ?? ""
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (goal) {
+      updateGoal({ ...formData, id: goal.id })  // mode édition
+    } else {
+      addGoal(formData)                          // mode création
+    }
+    onClose()
+  }
+}
+```
+
+> **En interview :** Ce pattern "dual mode form" est très courant. Il évite de créer deux composants séparés pour créer et éditer.
+
+---
+
+## 17. Hooks React — règles fondamentales
+
+### Les règles des hooks
+
+1. **Appelle les hooks uniquement au niveau supérieur** — jamais dans une condition, une boucle, ou une fonction imbriquée
+2. **Appelle les hooks uniquement dans des composants React ou des custom hooks**
+
+```typescript
+// ❌ INTERDIT — hook dans une fonction imbriquée
+const handleSubmit = () => {
+  const { addGoal } = useGoals()  // crash
+}
+
+// ✅ CORRECT — hook au niveau du composant
+export default function GoalForm() {
+  const { addGoal } = useGoals()  // ok
+
+  const handleSubmit = () => {
+    addGoal(formData)  // utilise la valeur du hook
+  }
+}
+```
+
+---
+
+## 18. Export / Import JSON
+
+### Théorie
+Sans backend, on peut permettre à l'utilisateur de sauvegarder et restaurer ses données via des fichiers JSON.
+
+### Export — créer un téléchargement programmatique
+
+```typescript
+const handleExport = () => {
+  const data = JSON.stringify(state, null, 2)     // formate le JSON
+  const blob = new Blob([data], { type: "application/json" })
+  const url = URL.createObjectURL(blob)           // crée une URL temporaire
+  const a = document.createElement("a")
+  a.href = url
+  a.download = "budgetflow-backup.json"
+  a.click()
+  URL.revokeObjectURL(url)                        // libère la mémoire
+}
+```
+
+### Import — lire un fichier avec FileReader
+
+```typescript
+const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0]
+  if (!file) return
+
+  const reader = new FileReader()
+  reader.onload = (event) => {
+    const content = event.target?.result as string
+    const parsed = JSON.parse(content)
+    dispatch({ type: "HYDRATE_GOALS", payload: parsed.goals })
+    dispatch({ type: "HYDRATE_BUDGET", payload: parsed.budget })
+  }
+  reader.readAsText(file)  // démarre la lecture asynchrone
+}
+```
+
+**`useRef` pour déclencher l'input file** — l'input `type="file"` est caché, un bouton le déclenche via `ref.current?.click()` :
+
+```typescript
+const fileInputRef = useRef<HTMLInputElement>(null)
+
+<Button onClick={() => fileInputRef.current?.click()}>Importer</Button>
+<input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
+```
+
+---
+
+## 19. Navigation active — useLocation
+
+### Théorie
+`useLocation()` retourne l'objet de l'URL actuelle. Utile pour surligner le lien actif dans une navbar.
+
+```typescript
+const location = useLocation()
+const isActive = location.pathname === "/goals"
+```
+
+### Pattern — tableau de liens avec icônes
+
+```typescript
+import { LayoutDashboard, Target, Wallet, Settings } from "lucide-react"
+
+const navItems = [
+  { to: "/", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/goals", label: "Objectifs", icon: Target },
+  { to: "/budget", label: "Budget", icon: Wallet },
+  { to: "/settings", label: "Paramètres", icon: Settings },
+]
+
+// Dans le JSX :
+{navItems.map(({ to, label, icon: Icon }) => {
+  const isActive = location.pathname === to
+  return (
+    <Link key={to} to={to}
+      className={isActive ? "bg-emerald-50 text-emerald-700" : "text-slate-500"}>
+      <Icon size={18} />
+      {label}
+    </Link>
+  )
+})}
+```
+
+**`icon: Icon`** — on renomme `icon` en `Icon` lors de la destructuration car les composants React doivent commencer par une majuscule.
+
+---
+
+## 20. Fonctions utilitaires pures
+
+### Théorie
+Une **fonction pure** retourne toujours le même résultat pour les mêmes entrées, sans effets de bord. Idéale pour les calculs métier.
+
+### Exemple réel — goalCalculations.ts
+
+```typescript
+export function percentageComplete(currentSavings: number, targetSavings: number): number {
+  if (targetSavings === 0) return 0
+  return Math.min((currentSavings / targetSavings) * 100, 100)
+}
+
+export function monthsToGoal(currentSavings: number, targetSavings: number, monthlyContribution: number): number {
+  if (monthlyContribution <= 0) return Infinity
+  const remaining = targetSavings - currentSavings
+  if (remaining <= 0) return 0
+  return Math.ceil(remaining / monthlyContribution)
+}
+```
+
+**Cas limites à toujours gérer :**
+- Division par zéro
+- Valeurs négatives
+- Objectif déjà atteint
+
+---
+
 *Document mis à jour au fur et à mesure de l'avancement du projet.*

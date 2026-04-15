@@ -3,26 +3,32 @@ import type { GoalStatus } from "../types/goal.type";
 import { useGoals } from "../hooks/useGoals";
 import Input from "../../../components/ui/Input";
 import Button from "../../../components/ui/Button";
+import type { Goal } from "../types/goal.type";
 
 interface GoalFormProps {
-    onClose: () => void
+    onClose: () => void,
+    goal?: Goal
 }
 
-export default function GoalForm({ onClose }: GoalFormProps) {
-    const { addGoal } = useGoals()
+export default function GoalForm({ onClose, goal }: GoalFormProps) {
+    const { addGoal, updateGoal } = useGoals()
 
     const [formData, setFormData] = useState({
-        name: "",
-        targetSavings: 0,
-        currentSavings: 0,
-        deadlineDate: "",
-        status: "active" as GoalStatus,
-        description: ""
+        name: goal?.name ?? "",
+        targetSavings: goal?.targetSavings ?? 0,
+        currentSavings: goal?.currentSavings ?? 0,
+        deadlineDate: goal?.deadlineDate ?? "",
+        status: goal?.status ?? "active" as GoalStatus,
+        description: goal?.description ?? ""
     })
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault()
-        addGoal(formData)
+        if(goal){
+            updateGoal({...formData, id: goal.id})
+        } else {
+            addGoal(formData)
+        }
         setFormData({
             name: "",
             targetSavings: 0,

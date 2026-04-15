@@ -13,6 +13,6 @@ export type AppAction =
   | { type: 'UPDATE_GOAL'; payload: Goal }
   | { type: 'HYDRATE_GOALS'; payload: Goal[] }
   | { type: 'HYDRATE_BUDGET'; payload: GlobalBudget }
-  | {type: "SET_INCOME"; payload: number}
-  | {type: "ADD_EXPENSE"; payload: Omit<FixedExpense, "id">}
-  | {type: "DELETE_EXPENSE"; payload: string}
+  | { type: 'SET_INCOME'; payload: number}
+  | { type: 'ADD_EXPENSE'; payload: Omit<FixedExpense, "id">}
+  | { type: 'DELETE_EXPENSE'; payload: string}
