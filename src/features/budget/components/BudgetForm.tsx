@@ -20,31 +20,33 @@ export default function BudgetForm() {
     }
 
     return (
-        <div className="flex flex-col gap-6">
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                <h2 className="font-semibold text-slate-800 mb-4">Revenu mensuel</h2>
-                <form onSubmit={handleIncomeSubmit} className="flex gap-3 items-end">
-                    <div className="flex-1">
-                        <Input label="Montant (€)" type="number" value={income} onChange={(event) => setIncomeValue(parseFloat(event.target.value))} />
-                    </div>
+    <div className="flex flex-col gap-6 h-full">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex-1">
+            <h2 className="font-semibold text-slate-800 mb-4">Revenu mensuel</h2>
+            <form onSubmit={handleIncomeSubmit} className="flex flex-col gap-3">
+                <Input label="Montant (€): " type="number" value={income}
+                    onChange={(e) => setIncomeValue(parseFloat(e.target.value))} />
+                <div className="flex gap-2">
                     <Button type="submit" variant="primary">Enregistrer</Button>
-                    <Button type="button" variant="danger" onClick={() => {resetIncome(); setIncomeValue(0)}}>Reset</Button>
-                </form>
-            </div>
-
-            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-                <h2 className="font-semibold text-slate-800 mb-4">Ajouter une dépense fixe</h2>
-                <form onSubmit={handleExpenseSubmit} className="flex flex-col gap-3">
-                    <Input label="Nom de la dépense" type="text" value={expenseForm.name} onChange={(event) => setExpenseForm({ ...expenseForm, name: event.target.value })} />
-                    <div className="flex gap-3 items-end">
-                        <div className="flex-1">
-                            <Input label="Montant (€)" type="number" value={expenseForm.amount} onChange={(event) => setExpenseForm({...expenseForm, amount: parseFloat(event.target.value)})}/>
-                        </div>
-                        <Button type="submit" variant="success">Ajouter</Button>
-                        <Button type="button" variant="danger" onClick={resetExpenses}>Reset</Button>
-                    </div>
-                </form>
-            </div>
+                    <Button type="button" variant="danger" onClick={() => { resetIncome(); setIncomeValue(0) }}>Reset</Button>
+                </div>
+            </form>
         </div>
-    )
+
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex-1">
+            <h2 className="font-semibold text-slate-800 mb-4">Ajouter une dépense fixe</h2>
+            <form onSubmit={handleExpenseSubmit} className="flex flex-col gap-3">
+                <Input label="Nom de la dépense: " type="text" value={expenseForm.name}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, name: e.target.value })} />
+                <Input label="Montant (€): " type="number" value={expenseForm.amount}
+                    onChange={(e) => setExpenseForm({ ...expenseForm, amount: parseFloat(e.target.value) })} />
+                <div className="flex gap-2">
+                    <Button type="submit" variant="primary">Ajouter</Button>
+                    <Button type="button" variant="danger" onClick={resetExpenses}>Reset dépenses</Button>
+                </div>
+            </form>
+        </div>
+    </div>
+)
+
 }
