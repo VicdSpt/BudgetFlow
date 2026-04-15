@@ -9,18 +9,39 @@ interface GoalCardProps{
     onDelete: (id: string) => void
 }
 
-export default function GoalCard({goal, onEdit, onDelete}: GoalCardProps) {
+export default function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
+  const percent = percentageComplete(goal.currentSavings, goal.targetSavings)
+
   return (
-    <div>
-        <div>{goal.name}</div>
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col gap-4">
+      <div className="flex items-start justify-between">
         <div>
-            <p>{goal.currentSavings} / {goal.targetSavings}</p>
-            <ProgressBar value={percentageComplete(goal.currentSavings, goal.targetSavings)} />
+          <h3 className="font-semibold text-slate-800">{goal.name}</h3>
+          {goal.description && (
+            <p className="text-sm text-slate-400 mt-0.5">{goal.description}</p>
+          )}
         </div>
-        <div>
-            <Button variant="success" onClick={() => onEdit(goal)}>Edit</Button>
-            <Button variant="danger" onClick={() => onDelete(goal.id)}>Delete</Button>
+        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700">
+          {goal.status}
+        </span>
+      </div>
+
+      <div>
+        <div className="flex justify-between text-sm text-slate-500 mb-2">
+          <span>{goal.currentSavings}€ épargnés</span>
+          <span>objectif : {goal.targetSavings}€</span>
         </div>
+        <ProgressBar value={percent} />
+      </div>
+
+      {goal.deadlineDate && (
+        <p className="text-xs text-slate-400">Échéance : {goal.deadlineDate}</p>
+      )}
+
+      <div className="flex justify-end gap-2">
+        <Button variant="ghost" onClick={() => onEdit(goal)}>Modifier</Button>
+        <Button variant="danger" onClick={() => onDelete(goal.id)}>Supprimer</Button>
+      </div>
     </div>
   )
 }

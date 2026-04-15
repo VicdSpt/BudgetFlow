@@ -26,6 +26,12 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         
         case "DELETE_EXPENSE":
             return { ...state, budget: { ...state.budget, spendingList: state.budget.spendingList.filter(expense => expense.id !== action.payload) } }
+        
+        case "RESET_INCOME":
+            return {...state, budget: {...state.budget, income: 0}}
+
+        case "RESET_EXPENSES":
+            return {...state, budget: {...state.budget, spendingList: []}}
         default:
             return state
     }

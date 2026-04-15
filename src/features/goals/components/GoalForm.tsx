@@ -41,22 +41,18 @@ export default function GoalForm({ onClose, goal }: GoalFormProps) {
     }
 
     return (
-        <form onSubmit={handleSubmit}>
-
-            <Input label="Nom" value={formData.name} onChange={(event) => setFormData({ ...formData, name: event.target.value})} />
-
-            <Input label="Montant Cible" type="number" value={formData.targetSavings} onChange={(event) => setFormData({ ...formData, targetSavings: parseFloat(event.target.value)})} />
-
-            <Input label="Economies" type="number" value={formData.currentSavings} onChange={(event) => setFormData({ ...formData, currentSavings: parseFloat(event.target.value)})} />
-
-            <Input label="Deadline" type="date" value={formData.deadlineDate} onChange={(event) => setFormData({ ...formData, deadlineDate: event.target.value})} />
-
-            <Input label="Status" value={formData.status} onChange={(event) => setFormData({ ...formData, status: event.target.value as GoalStatus})} />
-
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <Input label="Nom de l'objectif" value={formData.name} onChange={(event) => setFormData({ ...formData, name: event.target.value})} />
             <Input label="Description" value={formData.description} onChange={(event) => setFormData({ ...formData, description: event.target.value})} />
-            
-            <Button type="submit" variant="primary">Ajouter</Button>
-
+            <div className="grid grid-cols-2 gap-4">
+                <Input label="Montant cible (€)" type="number" value={formData.targetSavings} onChange={(event) => setFormData({ ...formData, targetSavings: parseFloat(event.target.value)})} />
+                <Input label="Épargne actuelle (€)" type="number" value={formData.currentSavings} onChange={(event) => setFormData({ ...formData, currentSavings: parseFloat(event.target.value)})} />
+            </div>
+            <Input label="Date limite" type="date" value={formData.deadlineDate} onChange={(event) => setFormData({ ...formData, deadlineDate: event.target.value})} />
+            <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
+                <Button type="submit" variant="primary">{goal ? "Modifier" : "Ajouter"}</Button>
+            </div>
         </form>
     )
 }

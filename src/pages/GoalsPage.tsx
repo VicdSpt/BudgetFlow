@@ -20,17 +20,21 @@ export default function GoalsPage() {
   }
 
   return (
-    <div>
-      <div>
-        <h1>Mes Objectifs</h1>
-        <Button variant="primary" onClick={() => setIsModalOpen(true)}>+ Ajouter un Objectif</Button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-800">Mes Objectifs</h1>
+          <p className="text-sm text-slate-500 mt-1">Suivez votre progression vers vos objectifs d'épargne</p>
+        </div>
+        <Button variant="primary" onClick={() => setIsModalOpen(true)}>+ Ajouter</Button>
       </div>
 
       <GoalList onEdit={handleEdit} />
 
-      <Modal isOpen={isModalOpen} onClose={handleClose} title="Nouvel Objectif">
-        <GoalForm goal={editingGoal ?? undefined} onClose={() => setIsModalOpen(false)}/>
+      <Modal isOpen={isModalOpen} onClose={handleClose} title={editingGoal ? "Modifier l'objectif" : "Nouvel objectif"}>
+        <GoalForm goal={editingGoal ?? undefined} onClose={handleClose} />
       </Modal>
     </div>
   )
+
 }
