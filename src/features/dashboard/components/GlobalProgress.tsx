@@ -24,7 +24,7 @@ export default function GlobalProgress() {
             </div>
             <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
                 <p className="text-sm text-slate-500">Disponible</p>
-                <p className={`text-2xl font-semibold mt-1 ${available >= 0 ? "text-emerald-600" : "text-rose-500"}`}>{available}€</p>
+                <p className={`text-2xl font-semibold mt-1 ${available >= 0 ? "text-emerald-600" : "text-rose-500"}`}>{available.toFixed(2)}€</p>
             </div>
         </div>
 

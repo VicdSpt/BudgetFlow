@@ -1,5 +1,6 @@
 import { useAppContext } from "../../../context/AppContext";
 import type { FixedExpense } from "../types/budget.type";
+import { monthlyAmount } from "../utils/BudgetCalculation";
 
 export function useBudget() {
   const { state, dispatch } = useAppContext();
@@ -19,8 +20,7 @@ export function useBudget() {
   };
 
   const availableBudget =
-    state.budget.income -
-    state.budget.spendingList.reduce((sum, expense) => sum + expense.amount, 0);
+    state.budget.income - state.budget.spendingList.reduce((sum, expense) => sum + monthlyAmount(expense), 0);
 
   return {
     budget: state.budget,

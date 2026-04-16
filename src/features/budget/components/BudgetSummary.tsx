@@ -36,7 +36,7 @@ export default function BudgetSummary() {
         <div className="flex justify-between items-center py-2 border-t border-slate-100">
             <span className="text-sm font-medium text-slate-700">Disponible</span>
             <span className={`font-semibold text-lg ${availableBudget >= 0 ? "text-emerald-600" : "text-rose-500"}`}>
-                {availableBudget}€
+                {availableBudget.toFixed(2)}€
             </span>
         </div>
     </div>

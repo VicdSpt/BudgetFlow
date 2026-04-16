@@ -1229,4 +1229,65 @@ export function monthsToGoal(currentSavings: number, targetSavings: number, mont
 
 ---
 
+## 21. Rendu conditionnel — piège avec les valeurs numériques
+
+### Théorie
+En JSX, `{condition && <Element />}` n'affiche rien si `condition` est falsy. Mais attention : en JavaScript, `0` est falsy **mais React l'affiche quand même** comme texte dans le DOM.
+
+```tsx
+// ❌ Piège — si monthlyContribution vaut 0, React affiche "0" dans le DOM
+{goal.monthlyContribution && <p>{goal.monthlyContribution}€/mois</p>}
+
+// ✅ Correct — comparaison explicite, retourne un boolean
+{goal.monthlyContribution > 0 && <p>{goal.monthlyContribution}€/mois</p>}
+```
+
+**Pourquoi ?** `0 && <p>...</p>` évalue à `0` (pas `false`). React ignore `false`, `null`, `undefined` — mais rend `0` comme texte.
+
+**Règle :** pour les valeurs numériques, toujours utiliser une comparaison (`> 0`, `!== 0`) plutôt qu'un simple `&&`.
+
+> **En interview :** C'est un bug classique React que beaucoup de juniors font. Le mentionner montre que tu connais les subtilités du rendu JSX.
+
+---
+
+## 22. Props calculées et logique de fallback
+
+### Théorie
+Quand une valeur peut venir de deux sources (saisie manuelle ou calcul automatique), on applique un **fallback** avec l'opérateur `||`.
+
+### Exemple dans BudgetFlow — autoContribution
+
+**GoalList.tsx** calcule une contribution automatique basée sur le budget disponible :
+
+```typescript
+const { availableBudget } = useBudget()
+const autoContribution = goals.length > 0 ? availableBudget / goals.length : 0
+```
+
+Cette valeur est passée en prop à chaque GoalCard :
+
+```tsx
+<GoalCard
+  goal={goal}
+  onEdit={onEdit}
+  onDelete={deleteGoal}
+  autoContribution={autoContribution}
+/>
+```
+
+**GoalCard.tsx** utilise la contribution manuelle si elle existe, sinon la valeur automatique :
+
+```typescript
+const contribution = goal.monthlyContribution || autoContribution
+const months = contribution ? monthsToGoal(goal.currentSavings, goal.targetSavings, contribution) : null
+```
+
+### Pourquoi calculer dans GoalList et pas dans GoalCard ?
+
+Si GoalCard appelait `useBudget()` et `useGoals()` lui-même, chaque card ferait des appels séparés au context. En centralisant dans GoalList (le parent), on calcule une seule fois et on distribue via props.
+
+**Règle :** ne pas lever l'état plus haut que nécessaire — mais ne pas non plus dupliquer des calculs coûteux dans chaque enfant.
+
+---
+
 *Document mis à jour au fur et à mesure de l'avancement du projet.*
