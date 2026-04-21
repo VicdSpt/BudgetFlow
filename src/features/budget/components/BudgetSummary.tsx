@@ -6,9 +6,9 @@ export default function BudgetSummary() {
     const { budget, availableBudget, deleteExpense } = useBudget()
 
     const colorsCodeExpenses = {
-        daily: { label: "Quotidien", color: "bg-blue-100 text-blue-600" },
+        daily: { label: "Quotidien", color: "bg-rose-100 text-rose-600" },
         weekly: { label: "Hebdo", color: "bg-orange-100 text-orange-600" },
-        monthly: { label: "Mensuel", color: "bg-red-100 text-red-600" },
+        monthly: { label: "Mensuel", color: "bg-blue-100 text-blue-600" },
         quarterly: { label: "Trimestriel", color: "bg-violet-100 text-violet-600" },
         semesterly: { label: "Semestriel", color: "bg-cyan-100 text-cyan-600" },
         yearly: { label: "Annuel", color: "bg-emerald-100 text-emerald-600" },

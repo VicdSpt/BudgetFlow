@@ -1290,4 +1290,77 @@ Si GoalCard appelait `useBudget()` et `useGoals()` lui-même, chaque card ferait
 
 ---
 
+## 23. Calcul de dates avec l'objet Date
+
+### Théorie
+JavaScript a un objet natif `Date` pour manipuler les dates. Pour calculer un nombre de mois entre deux dates :
+
+```typescript
+const now = new Date()
+const deadline = new Date("2027-04-30")
+const months = (deadline.getFullYear() - now.getFullYear()) * 12 + (deadline.getMonth() - now.getMonth())
+```
+
+**Pourquoi cette formule ?**
+- `getFullYear()` retourne l'année (ex: 2027)
+- `getMonth()` retourne le mois de 0 à 11 (janvier = 0, décembre = 11)
+- On multiplie les années par 12 pour les convertir en mois, puis on ajoute la différence de mois
+
+### Exemple réel — goalCalculation.ts
+
+```typescript
+export function monthsUntilDeadline(deadlineDate: string): number {
+  const now = new Date()
+  const deadline = new Date(deadlineDate)
+  const months = (deadline.getFullYear() - now.getFullYear()) * 12 + (deadline.getMonth() - now.getMonth())
+  return Math.max(months, 0)  // jamais négatif
+}
+
+export function suggestedMonthlyContribution(
+  currentSavings: number,
+  targetSavings: number,
+  deadlineDate: string
+): number {
+  const months = monthsUntilDeadline(deadlineDate)
+  if (months === 0) return 0
+  const remaining = targetSavings - currentSavings
+  if (remaining <= 0) return 0
+  return Math.ceil(remaining / months)
+}
+```
+
+**`Math.max(months, 0)`** — si la deadline est dépassée, le résultat serait négatif. On le force à 0.
+
+**`Math.ceil`** — on arrondit toujours vers le haut. Mieux vaut épargner un peu plus que pas assez.
+
+> **En interview :** `getMonth()` qui commence à 0 est un piège classique. Toujours garder en tête que janvier = 0 et décembre = 11.
+
+---
+
+## 24. Suppression de feature — refactoring
+
+### Ce qu'on a fait
+On a supprimé `monthlyContribution` comme champ saisi manuellement et remplacé par un **calcul automatique** basé sur la deadline.
+
+**Avant :**
+```
+Utilisateur saisit une contribution → app calcule les mois restants
+```
+
+**Après :**
+```
+Utilisateur saisit une deadline → app calcule la contribution suggérée
+```
+
+### Fichiers modifiés
+- `goal.type.ts` — suppression de `monthlyContribution?: number`
+- `GoalForm.tsx` — suppression du champ Input et de la clé dans le state
+- `GoalList.tsx` — suppression de `autoContribution` et de l'import `useBudget`
+- `GoalCard.tsx` — remplacement de la logique par `suggestedMonthlyContribution`
+
+### Leçon
+Quand une feature ne correspond pas au besoin réel, il vaut mieux la **supprimer proprement** que de la contourner. Un type sans champ inutile, un formulaire sans champ superflu, c'est un code plus lisible et plus maintenable.
+
+---
+
 *Document mis à jour au fur et à mesure de l'avancement du projet.*

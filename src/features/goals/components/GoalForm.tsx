@@ -15,8 +15,8 @@ export default function GoalForm({ onClose, goal }: GoalFormProps) {
 
     const [formData, setFormData] = useState({
         name: goal?.name ?? "",
-        targetSavings: goal?.targetSavings ?? 0,
-        currentSavings: goal?.currentSavings ?? 0,
+        targetSavings: String(goal?.targetSavings ?? ""),
+        currentSavings: String(goal?.currentSavings ?? ""),
         deadlineDate: goal?.deadlineDate ?? "",
         status: goal?.status ?? "active" as GoalStatus,
         description: goal?.description ?? ""
@@ -24,15 +24,20 @@ export default function GoalForm({ onClose, goal }: GoalFormProps) {
 
     const handleSubmit = (event: React.FormEvent) => {
         event.preventDefault()
+        const parsed = {
+            ...formData,
+            targetSavings: parseFloat(formData.targetSavings.replace(",", ".")) || 0,
+            currentSavings: parseFloat(formData.currentSavings.replace(",", ".")) || 0,
+        }
         if (goal) {
-            updateGoal({ ...formData, id: goal.id })
+            updateGoal({ ...parsed, id: goal.id })
         } else {
-            addGoal(formData)
+            addGoal(parsed)
         }
         setFormData({
             name: "",
-            targetSavings: 0,
-            currentSavings: 0,
+            targetSavings: "",
+            currentSavings: "",
             deadlineDate: "",
             status: "active" as GoalStatus,
             description: ""
@@ -47,20 +52,16 @@ export default function GoalForm({ onClose, goal }: GoalFormProps) {
             <Input label="Description" value={formData.description} onChange={(event) => setFormData({ ...formData, description: event.target.value })} />
 
             <div className="grid grid-cols-2 gap-4">
-
-                <Input label="Montant cible (€)" type="number" value={formData.targetSavings} onChange={(event) => setFormData({ ...formData, targetSavings: parseFloat(event.target.value) })} />
-
-                <Input label="Épargne actuelle (€)" type="number" value={formData.currentSavings} onChange={(event) => setFormData({ ...formData, currentSavings: parseFloat(event.target.value) })} />
-
+                <Input label="Montant cible (€)" type="text" inputMode="decimal" value={formData.targetSavings} onChange={(event) => setFormData({ ...formData, targetSavings: event.target.value })} />
+                <Input label="Épargne actuelle (€)" type="text" inputMode="decimal" value={formData.currentSavings} onChange={(event) => setFormData({ ...formData, currentSavings: event.target.value })} />
             </div>
 
             <Input label="Date limite" type="date" value={formData.deadlineDate} onChange={(event) => setFormData({ ...formData, deadlineDate: event.target.value })} />
 
-<div className="flex justify-end gap-2 pt-2">
+            <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
                 <Button type="submit" variant="primary">{goal ? "Modifier" : "Ajouter"}</Button>
             </div>
-
         </form>
     )
 }
