@@ -18,6 +18,7 @@ export type AppAction =
   | { type: "HYDRATE_BUDGET"; payload: GlobalBudget }
   | { type: "SET_INCOME"; payload: number }
   | { type: "ADD_EXPENSE"; payload: Omit<FixedExpense, "id"> }
+  | { type: "UPDATE_EXPENSE"; payload: FixedExpense }
   | { type: "DELETE_EXPENSE"; payload: string }
   | { type: "RESET_INCOME" }
   | { type: "RESET_EXPENSES" };

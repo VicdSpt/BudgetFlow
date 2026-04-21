@@ -1,5 +1,6 @@
 import BudgetForm from "../features/budget/components/BudgetForm"
 import BudgetSummary from "../features/budget/components/BudgetSummary"
+import BudgetChart from "../features/budget/components/BudgetChart"
 
 export default function BudgetPage() {
   return (
@@ -12,6 +13,7 @@ export default function BudgetPage() {
         <BudgetForm />
         <BudgetSummary />
       </div>
+      <BudgetChart />
     </div>
   )
 }

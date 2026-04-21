@@ -1,15 +1,17 @@
-export interface FixedExpense{
+export type ExpenseFrequency = "daily" | "weekly" | "monthly" | "quarterly" | "semesterly" | "yearly"
+
+export type ExpenseCategory = "logement" | "transport" | "alimentation" | "abonnements" | "sante" | "loisirs" | "autre"
+
+export interface FixedExpense {
     id: string
-    name: string;
-    amount: number;
+    name: string
+    amount: number
+    frequency: ExpenseFrequency
+    category: ExpenseCategory
     paymentDay?: number
-    frequency: ExpenseFrequency;
 }
 
-export type ExpenseFrequency= "daily" | "weekly" | "monthly" | "quarterly" | "semesterly" | "yearly"
-
-
-export interface GlobalBudget{
-    income: number;
-    spendingList: FixedExpense[];
+export interface GlobalBudget {
+    income: number
+    spendingList: FixedExpense[]
 }

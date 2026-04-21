@@ -24,6 +24,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         case "ADD_EXPENSE":
             return { ...state, budget: { ...state.budget, spendingList: [...state.budget.spendingList, { ...action.payload, id: crypto.randomUUID() }] } }
         
+        case "UPDATE_EXPENSE":
+            return { ...state, budget: { ...state.budget, spendingList: state.budget.spendingList.map(e => e.id === action.payload.id ? action.payload : e) } }
+
         case "DELETE_EXPENSE":
             return { ...state, budget: { ...state.budget, spendingList: state.budget.spendingList.filter(expense => expense.id !== action.payload) } }
         

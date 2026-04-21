@@ -15,6 +15,10 @@ export function useBudget() {
     dispatch({ type: "ADD_EXPENSE", payload: expense });
   };
 
+  const updateExpense = (expense: FixedExpense) => {
+    dispatch({ type: "UPDATE_EXPENSE", payload: expense });
+  };
+
   const deleteExpense = (id: string) => {
     dispatch({ type: "DELETE_EXPENSE", payload: id });
   };
@@ -26,6 +30,7 @@ export function useBudget() {
     budget: state.budget,
     setIncome,
     addExpense,
+    updateExpense,
     deleteExpense,
     resetExpenses,
     resetIncome,
