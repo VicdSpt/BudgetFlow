@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useBudget } from "../hooks/useBudget"
-import Input from "../../../components/ui/Input"
+import Input from "../../../components/ui/input"
 import Button from "../../../components/ui/Button"
 import type { ExpenseFrequency, ExpenseCategory } from "../types/budget.type"
 import { formatMonth } from "../utils/BudgetCalculation"

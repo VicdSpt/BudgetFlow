@@ -3,7 +3,7 @@ export function percentageComplete(
   targetSavings: number,
 ): number {
   if (targetSavings === 0) return 0; // Avoid division by zero
-  return Math.min((currentSavings / targetSavings) * 100, 100);
+  return Math.min(Math.round((currentSavings / targetSavings) * 100), 100);
 }
 
 export function monthsUntilDeadline(deadlineDate: string): number {

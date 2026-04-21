@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { GoalStatus } from "../types/goal.type";
 import { useGoals } from "../hooks/useGoals";
-import Input from "../../../components/ui/Input";
+import Input from "../../../components/ui/input";
 import Button from "../../../components/ui/Button";
 import type { Goal } from "../types/goal.type";
 
