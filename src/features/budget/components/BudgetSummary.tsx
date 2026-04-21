@@ -21,16 +21,16 @@ const categoryConfig: Record<string, string> = {
     abonnements:   "📱",
     sante:         "💊",
     loisirs:       "🎮",
+    investissement: "💵",
     autre:         "📦",
 }
 
 export default function BudgetSummary() {
-    const { budget, availableBudget, deleteExpense, updateExpense } = useBudget()
+    const { budget, availableBudget, deleteExpense, updateExpense, currentIncome, totalMonthlyExpenses } = useBudget()
     const [editingId, setEditingId] = useState<string | null>(null)
     const [editForm, setEditForm] = useState<{ name: string; amount: string; frequency: ExpenseFrequency; category: ExpenseCategory } | null>(null)
 
-    const totalExpenses = budget.income - availableBudget
-    const spentPercent = budget.income > 0 ? Math.min((totalExpenses / budget.income) * 100, 100) : 0
+    const spentPercent = currentIncome > 0 ? Math.min((totalMonthlyExpenses / currentIncome) * 100, 100) : 0
 
     const startEdit = (expense: FixedExpense) => {
         setEditingId(expense.id)
@@ -49,8 +49,8 @@ export default function BudgetSummary() {
             <h2 className="font-semibold text-slate-800">Résumé</h2>
 
             <div className="flex justify-between items-center py-2 border-b border-slate-50">
-                <span className="text-sm text-slate-500">Revenus mensuels</span>
-                <span className="font-medium text-slate-800">{budget.income}€</span>
+                <span className="text-sm text-slate-500">Revenus ce mois</span>
+                <span className="font-medium text-slate-800">{currentIncome > 0 ? `${currentIncome}€` : "—"}</span>
             </div>
 
             {/* Barre de progression */}
@@ -95,6 +95,7 @@ export default function BudgetSummary() {
                                         <select className="px-2 py-1 text-sm rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-400" value={editForm.category} onChange={e => setEditForm({ ...editForm, category: e.target.value as ExpenseCategory })}>
                                             <option value="logement">🏠 Logement</option>
                                             <option value="transport">🚗 Transport</option>
+                                            <option value="investissement">💵 Investissements</option>
                                             <option value="alimentation">🛒 Alimentation</option>
                                             <option value="abonnements">📱 Abonnements</option>
                                             <option value="sante">💊 Santé</option>

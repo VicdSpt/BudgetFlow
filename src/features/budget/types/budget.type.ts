@@ -1,6 +1,6 @@
 export type ExpenseFrequency = "daily" | "weekly" | "monthly" | "quarterly" | "semesterly" | "yearly"
 
-export type ExpenseCategory = "logement" | "transport" | "alimentation" | "abonnements" | "sante" | "loisirs" | "autre"
+export type ExpenseCategory = "logement" | "transport" | "alimentation" | "abonnements" | "sante" | "loisirs" | "investissement" | "autre"
 
 export interface FixedExpense {
     id: string
@@ -11,7 +11,12 @@ export interface FixedExpense {
     paymentDay?: number
 }
 
-export interface GlobalBudget {
+export interface MonthlyIncome {
+    month: string  // format "YYYY-MM"
     income: number
+}
+
+export interface GlobalBudget {
+    monthlyIncomes: MonthlyIncome[]
     spendingList: FixedExpense[]
 }
