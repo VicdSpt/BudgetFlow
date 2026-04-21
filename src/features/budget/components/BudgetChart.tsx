@@ -16,11 +16,11 @@ export default function BudgetChart() {
     ]
 
     return (
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 outline-none">
             <h2 className="font-semibold text-slate-800 mb-4">Répartition du budget</h2>
             <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                    <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={3} dataKey="value">
+                <PieChart style={{ outline: "none" }}>
+                    <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={3} dataKey="value" stroke="none">
                         {data.map((_, index) => (
                             <Cell key={index} fill={COLORS[index]} />
                         ))}
