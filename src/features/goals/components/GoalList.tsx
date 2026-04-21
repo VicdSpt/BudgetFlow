@@ -1,15 +1,12 @@
 import { useGoals } from "../hooks/useGoals";
 import GoalCard from "./GoalCard";
 import type { Goal } from "../types/goal.type";
-import { useBudget } from "../../budget/hooks/useBudget";
 
 interface GoalListProps{
     onEdit: (goal: Goal) => void
 }
 export default function GoalList({onEdit}: GoalListProps) {
     const { goals, deleteGoal } = useGoals()
-    const { availableBudget} = useBudget()
-    const autoContribution = goals.length > 0 ? availableBudget / goals.length: 0
 
     if (goals.length === 0) return (
         <div className="text-center py-16 text-slate-400">
@@ -25,7 +22,6 @@ export default function GoalList({onEdit}: GoalListProps) {
                     goal={goal}
                     onEdit={onEdit}
                     onDelete={deleteGoal}
-                    autoContribution={autoContribution}
                 />
             ))}
         </div>

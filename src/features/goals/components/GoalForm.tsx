@@ -19,8 +19,7 @@ export default function GoalForm({ onClose, goal }: GoalFormProps) {
         currentSavings: goal?.currentSavings ?? 0,
         deadlineDate: goal?.deadlineDate ?? "",
         status: goal?.status ?? "active" as GoalStatus,
-        description: goal?.description ?? "",
-        monthlyContribution: goal?.monthlyContribution ?? 0
+        description: goal?.description ?? ""
     })
 
     const handleSubmit = (event: React.FormEvent) => {
@@ -36,8 +35,7 @@ export default function GoalForm({ onClose, goal }: GoalFormProps) {
             currentSavings: 0,
             deadlineDate: "",
             status: "active" as GoalStatus,
-            description: "",
-            monthlyContribution: 0
+            description: ""
         })
         onClose()
     }
@@ -58,9 +56,7 @@ export default function GoalForm({ onClose, goal }: GoalFormProps) {
 
             <Input label="Date limite" type="date" value={formData.deadlineDate} onChange={(event) => setFormData({ ...formData, deadlineDate: event.target.value })} />
 
-            <Input label="Contribution mensuelle (€)" type="number" value={formData.monthlyContribution} onChange={(event) => setFormData({ ...formData, monthlyContribution: parseFloat(event.target.value)})} />
-
-            <div className="flex justify-end gap-2 pt-2">
+<div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
                 <Button type="submit" variant="primary">{goal ? "Modifier" : "Ajouter"}</Button>
             </div>

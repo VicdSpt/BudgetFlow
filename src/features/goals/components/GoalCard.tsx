@@ -1,19 +1,18 @@
 import type { Goal } from "../types/goal.type"
 import ProgressBar from "../../../components/ui/ProgressBar"
-import { percentageComplete, monthsToGoal } from "../utils/goalCalculation"
+import { percentageComplete, suggestedMonthlyContribution, monthsUntilDeadline } from "../utils/goalCalculation"
 import Button from "../../../components/ui/Button"
 
 interface GoalCardProps {
   goal: Goal;
   onEdit: (goal: Goal) => void;
   onDelete: (id: string) => void;
-  autoContribution: number;
 }
 
-export default function GoalCard({ goal, onEdit, onDelete, autoContribution }: GoalCardProps) {
+export default function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
   const percent = percentageComplete(goal.currentSavings, goal.targetSavings)
-  const contribution = goal.monthlyContribution || autoContribution
-  const months = contribution ? monthsToGoal(goal.currentSavings, goal.targetSavings, contribution) : null
+  const suggested = goal.deadlineDate ? suggestedMonthlyContribution(goal.currentSavings, goal.targetSavings, goal.deadlineDate) : null
+  const months = goal.deadlineDate ? monthsUntilDeadline(goal.deadlineDate) : null
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col gap-4">
@@ -37,17 +36,21 @@ export default function GoalCard({ goal, onEdit, onDelete, autoContribution }: G
         <ProgressBar value={percent} />
       </div>
 
-      {goal.monthlyContribution > 0 && (
-        <p className="text-xs text-slate-500">{goal.monthlyContribution}€/mois</p>
-      )}
-
-
       {goal.deadlineDate && (
         <p className="text-xs text-slate-400">Échéance: {goal.deadlineDate}</p>
       )}
 
-      {months !== null && (
-        <p className="text-xs text-slate-500">{months} mois restants</p>
+      {suggested !== null && suggested > 0 && (
+        <div className="flex flex-col gap-1">
+          <p className="text-xs text-slate-500">
+            <span className="font-medium text-emerald-600">{suggested}€/mois</span> à épargner
+          </p>
+          <p className="text-xs text-slate-400">{months} mois restants</p>
+        </div>
+      )}
+
+      {!goal.deadlineDate && (
+        <p className="text-xs text-amber-500">Ajoute une date limite pour voir l'estimation</p>
       )}
 
       <div className="flex justify-end gap-2">

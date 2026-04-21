@@ -8,7 +8,6 @@ export interface Goal {
   currentSavings: number;
   deadlineDate?: string;
   status: GoalStatus;
-  monthlyContribution?: number
 }
 
 
