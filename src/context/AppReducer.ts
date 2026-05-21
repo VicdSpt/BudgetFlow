@@ -1,4 +1,5 @@
 import type { AppState, AppAction } from "../types/common.type";
+import type { Transaction } from "../features/transactions/types/transaction.type";
 
 export function appReducer(state: AppState, action: AppAction): AppState {
     switch (action.type) {
@@ -39,6 +40,29 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
         case "RESET_EXPENSES":
             return { ...state, budget: { ...state.budget, spendingList: [] } }
+
+        case "ADD_TRANSACTION": {
+            const newTransaction: Transaction = {
+                ...action.payload,
+                id: crypto.randomUUID(),
+                createdAt: new Date().toISOString(),
+            }
+            return { ...state, transactions: [...state.transactions, newTransaction] }
+        }
+
+        case "UPDATE_TRANSACTION":
+            return {
+                ...state,
+                transactions: state.transactions.map(t =>
+                    t.id === action.payload.id ? action.payload : t
+                ),
+            }
+
+        case "DELETE_TRANSACTION":
+            return {
+                ...state,
+                transactions: state.transactions.filter(t => t.id !== action.payload),
+            }
 
         default:
             return state
