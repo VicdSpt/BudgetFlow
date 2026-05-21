@@ -13,7 +13,10 @@
       "Read(//c/Users/Admin/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/requesting-code-review/**)",
       "Bash(git -C \"e:/ALL DOCUMENTS/COURS CODE WCS/budgetflow\" rev-parse HEAD)",
       "Bash(git commit *)",
-      "Bash(git mv *)"
+      "Bash(git mv *)",
+      "Bash(git -C \"e:/ALL DOCUMENTS/COURS CODE WCS/budgetflow\" log --oneline -2)",
+      "Bash(git -C \"e:/ALL DOCUMENTS/COURS CODE WCS/budgetflow\" show --stat HEAD)",
+      "Bash(git -C \"e:/ALL DOCUMENTS/COURS CODE WCS/budgetflow\" log --oneline -3)"
     ],
     "additionalDirectories": [
       "e:\\ALL DOCUMENTS\\COURS CODE WCS\\budgetflow\\docs\\superpowers\\specs"
