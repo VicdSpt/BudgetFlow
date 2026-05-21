@@ -9,7 +9,7 @@ export type TransactionCategory =
   | 'tech'
   | 'other'
 
-export type TransactionTag = 'fixed' | 'variable' | 'leisure'
+export type TransactionTag = 'fixed' | 'variable' | 'one-time'
 
 export interface Transaction {
   id: string

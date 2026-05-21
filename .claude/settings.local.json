@@ -3,7 +3,20 @@
     "allow": [
       "Bash(git add *)",
       "Bash(git commit -m ' *)",
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(git -C \"e:/ALL DOCUMENTS/COURS CODE WCS/budgetflow\" log --oneline -10)",
+      "Bash(ls \"C:/Users/Admin/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/scripts/\")",
+      "Read(//c/Users/Admin/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/scripts/**)",
+      "Bash(mkdir -p \"e:/ALL DOCUMENTS/COURS CODE WCS/budgetflow/docs/superpowers/specs\")",
+      "Read(//c/Users/Admin/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/subagent-driven-development/**)",
+      "Bash(cat \"C:/Users/Admin/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/requesting-code-review/code-reviewer.md\" 2>/dev/null | head -60)",
+      "Read(//c/Users/Admin/.claude/plugins/cache/claude-plugins-official/superpowers/5.1.0/skills/requesting-code-review/**)",
+      "Bash(git -C \"e:/ALL DOCUMENTS/COURS CODE WCS/budgetflow\" rev-parse HEAD)",
+      "Bash(git commit *)",
+      "Bash(git mv *)"
+    ],
+    "additionalDirectories": [
+      "e:\\ALL DOCUMENTS\\COURS CODE WCS\\budgetflow\\docs\\superpowers\\specs"
     ]
   }
 }
