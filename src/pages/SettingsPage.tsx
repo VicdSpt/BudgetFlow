@@ -1,5 +1,6 @@
 import { useAppContext } from "../context/AppContext"
 import Button from "../components/ui/Button"
+import InfoTooltip from "../components/ui/InfoTooltip"
 import { useRef } from "react"
 
 export default function SettingsPage() {
@@ -38,7 +39,10 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-800">Paramètres</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-semibold text-slate-800">Paramètres</h1>
+          <InfoTooltip text="Exportez vos données en JSON pour les sauvegarder ou les transférer, et importez un fichier de sauvegarde pour restaurer vos données." />
+        </div>
         <p className="text-sm text-slate-500 mt-1">Gérez vos données</p>
       </div>
 

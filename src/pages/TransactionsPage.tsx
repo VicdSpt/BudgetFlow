@@ -5,6 +5,7 @@ import TransactionList from '../features/transactions/components/TransactionList
 import TransactionForm from '../features/transactions/components/TransactionForm'
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
+import InfoTooltip from '../components/ui/InfoTooltip'
 import type { Transaction } from '../features/transactions/types/transaction.type'
 
 export default function TransactionsPage() {
@@ -45,7 +46,10 @@ export default function TransactionsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-800">Dépenses</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-semibold text-slate-800">Dépenses</h1>
+            <InfoTooltip text="Enregistrez vos dépenses réelles du quotidien (courses, transport, loisirs…) et visualisez leur répartition par catégorie sous forme de graphique." />
+          </div>
           <p className="text-sm text-slate-500 mt-1">Suivi de vos dépenses réelles</p>
         </div>
         <Button onClick={handleOpenAdd} variant="primary">+ Ajouter</Button>
