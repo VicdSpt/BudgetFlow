@@ -16,7 +16,15 @@
       "Bash(git mv *)",
       "Bash(git -C \"e:/ALL DOCUMENTS/COURS CODE WCS/budgetflow\" log --oneline -2)",
       "Bash(git -C \"e:/ALL DOCUMENTS/COURS CODE WCS/budgetflow\" show --stat HEAD)",
-      "Bash(git -C \"e:/ALL DOCUMENTS/COURS CODE WCS/budgetflow\" log --oneline -3)"
+      "Bash(git -C \"e:/ALL DOCUMENTS/COURS CODE WCS/budgetflow\" log --oneline -3)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(start http://localhost:5173)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(curl -s http://localhost:5173/transactions -o /dev/null -w \"%{http_code}\")",
+      "Bash(curl -s http://localhost:5173/goals -o /dev/null -w \" %{http_code}\")",
+      "Bash(curl -s http://localhost:5173/budget -o /dev/null -w \" %{http_code}\")",
+      "Bash(curl -s http://localhost:5173/settings -o /dev/null -w \" %{http_code}\")"
     ],
     "additionalDirectories": [
       "e:\\ALL DOCUMENTS\\COURS CODE WCS\\budgetflow\\docs\\superpowers\\specs"
