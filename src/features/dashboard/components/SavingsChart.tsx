@@ -36,7 +36,7 @@ export default function SavingsChart() {
             <BarChart data={data}>
                 <XAxis dataKey="name" />
                 <YAxis />
-                <Tooltip cursor={false} content={<CustomTooltip />} />
+                <Tooltip cursor={false} content={<CustomTooltip />} isAnimationActive={false} />
                 <Bar dataKey="épargné" fill="#3b82f6" />
                 <Bar dataKey="objectif" fill="#93c5fd" />
             </BarChart>
