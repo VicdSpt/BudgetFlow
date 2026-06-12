@@ -39,7 +39,7 @@ export default function TransactionCategoryChart({ categoryTotals }: Transaction
             <Cell key={index} fill={entry.color} />
           ))}
         </Pie>
-        <Tooltip formatter={(value: number) => [`${value.toFixed(2)}€`, '']} />
+        <Tooltip formatter={(value) => [`${Number(value).toFixed(2)}€`, '']} />
         <Legend formatter={(value) => <span className="text-xs text-slate-600">{value}</span>} />
       </PieChart>
     </ResponsiveContainer>

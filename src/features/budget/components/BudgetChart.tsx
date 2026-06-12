@@ -23,7 +23,7 @@ export default function BudgetChart() {
                             <Cell key={index} fill={COLORS[index]} />
                         ))}
                     </Pie>
-                    <Tooltip formatter={(value: number) => `${value}€`} />
+                    <Tooltip formatter={(value) => `${Number(value)}€`} />
                     <Legend />
                 </PieChart>
             </ResponsiveContainer>
