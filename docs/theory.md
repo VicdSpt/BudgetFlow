@@ -1363,4 +1363,137 @@ Quand une feature ne correspond pas au besoin réel, il vaut mieux la **supprime
 
 ---
 
+## 25. Feature complète — les transactions (dépenses réelles)
+
+### Ce qu'on a construit
+Une nouvelle feature autonome `src/features/transactions/` qui suit exactement le même pattern que `goals/` et `budget/` : types, utils, hook, composants, page, route.
+
+**Distinction métier importante :**
+- **Budget** = dépenses *prévues* (fixes, récurrentes : loyer, abonnements)
+- **Transactions** = dépenses *réelles* saisies au quotidien (courses, essence, restaurant)
+
+### Le type et ses choix de design
+
+```typescript
+export type TransactionTag = 'fixed' | 'variable' | 'one-time'
+```
+
+Premier jet : `'fixed' | 'variable' | 'leisure'`. Problème détecté en review : `'leisure'` existait déjà dans `TransactionCategory`. Un **tag** décrit le *comportement financier* (récurrent, variable, ponctuel), une **catégorie** décrit le *sujet* (alimentation, transport…). Mélanger les deux axes crée de la redondance et de la confusion.
+
+> **En interview :** savoir distinguer deux axes de classification indépendants (orthogonaux) est un signe de maturité en modélisation de données.
+
+### Éviter les collisions de noms d'actions
+
+Le reducer avait déjà `ADD_EXPENSE` / `UPDATE_EXPENSE` / `DELETE_EXPENSE` pour les dépenses fixes du budget. On a donc nommé les nouvelles actions `ADD_TRANSACTION` / `UPDATE_TRANSACTION` / `DELETE_TRANSACTION`. Dans une discriminated union, deux actions ne peuvent pas partager le même `type` — TypeScript ne saurait pas les distinguer.
+
+### useMemo — mémoïsation des calculs dérivés
+
+```typescript
+const filtered = useMemo(
+  () => filterTransactions(state.transactions, filter),
+  [state.transactions, filter]
+)
+
+const categoryTotals = useMemo(
+  () => totalByCategory(filtered),
+  [filtered]
+)
+```
+
+**Pourquoi :** sans `useMemo`, ces calculs se relancent à *chaque* render du composant, même si les données n'ont pas changé. Avec `useMemo`, React garde le résultat en cache et ne recalcule que si une dépendance change.
+
+**Chaînage :** `categoryTotals` dépend de `filtered`, qui est lui-même mémoïsé. Si `filtered` ne change pas (même référence), `categoryTotals` n'est pas recalculé.
+
+> **En interview :** `useMemo` n'est pas gratuit (coût de comparaison des deps). On l'utilise pour des calculs coûteux ou pour stabiliser des références passées en props. Pas pour une addition de 2 nombres.
+
+### Record<K, V> — dictionnaires typés
+
+```typescript
+export const CATEGORY_COLORS: Record<TransactionCategory, string> = {
+  food: '#6366f1',
+  transport: '#f59e0b',
+  // ... TypeScript FORCE à couvrir toutes les catégories
+}
+```
+
+Si on ajoute une catégorie au type union et qu'on oublie de l'ajouter ici, TypeScript refuse de compiler. C'est de la **sécurité par le typage** : le compilateur vérifie l'exhaustivité à notre place.
+
+### reduce — agrégation de données
+
+```typescript
+export function totalByCategory(
+  transactions: Transaction[]
+): Record<TransactionCategory, number> {
+  return transactions.reduce((acc, t) => {
+    acc[t.category] = (acc[t.category] ?? 0) + t.amount
+    return acc
+  }, {} as Record<TransactionCategory, number>)
+}
+```
+
+`reduce` transforme un tableau en une seule valeur (ici un objet de totaux). Le `?? 0` gère le premier passage où la clé n'existe pas encore.
+
+### Recharts — donut chart
+
+```typescript
+<Pie data={data} innerRadius={60} outerRadius={90} dataKey="value" paddingAngle={3}>
+  {data.map((entry, index) => (
+    <Cell key={index} fill={entry.color} />
+  ))}
+</Pie>
+```
+
+- `innerRadius > 0` transforme le pie en **donut**
+- Chaque `<Cell>` colore une part individuellement
+- `ResponsiveContainer` adapte le chart à la taille du parent
+
+### Pattern création/édition avec un seul formulaire
+
+```typescript
+const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined)
+
+// Le même form sert aux deux modes :
+<TransactionForm initial={editingTransaction} ... />
+
+// Dans le submit :
+if (editingTransaction) {
+  update({ ...editingTransaction, ...data })  // garde id + createdAt
+} else {
+  add(data)
+}
+```
+
+`initial === undefined` → mode création. `initial` défini → mode édition avec champs pré-remplis. Le spread `{ ...editingTransaction, ...data }` préserve `id` et `createdAt` tout en écrasant les champs modifiés.
+
+---
+
+## 26. Composant InfoTooltip — CSS group-hover
+
+### Ce qu'on a construit
+Un tooltip réutilisable affiché au survol, en pur Tailwind, sans JavaScript ni state.
+
+```tsx
+<div className="relative group inline-flex">
+  <span className="...">i</span>
+  <div className="absolute left-0 top-6 ... opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+    {text}
+  </div>
+</div>
+```
+
+### Concepts clés
+
+**`group` / `group-hover:`** — le parent porte la classe `group`, l'enfant réagit avec `group-hover:opacity-100`. Ça permet de déclencher un style sur un élément quand on survole *un autre* élément.
+
+**`opacity-0` + `transition-opacity` plutôt que `hidden`** — `hidden` (display: none) ne peut pas être animé. L'opacité, si.
+
+**`pointer-events-none`** — la bulle invisible ne doit pas intercepter les clics ni déclencher son propre hover (sinon elle clignoterait).
+
+**Positionnement** — `relative` sur le parent, `absolute` sur la bulle. Premier jet : ancrée en haut (`bottom-6`) → rognée par le bord de l'écran car les titres sont en haut de page. Fix : ancrage en bas à droite (`top-6 left-0`).
+
+### Leçon
+Un tooltip en haut de page doit s'ouvrir vers le bas, un tooltip en bas de page vers le haut. Les bibliothèques comme Radix ou Floating UI gèrent ça automatiquement ("collision detection") — à connaître pour les projets pro.
+
+---
+
 *Document mis à jour au fur et à mesure de l'avancement du projet.*
