@@ -11,8 +11,9 @@ interface TransactionListProps {
 }
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => {
-  const date = new Date()
-  date.setMonth(date.getMonth() - i)
+  const now = new Date()
+  // jour fixé à 1 : évite le débordement de fin de mois (ex: 31 juillet - 1 mois → "31 juin" → 1er juillet)
+  const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
   const value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
   const label = date.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
   return { value, label }

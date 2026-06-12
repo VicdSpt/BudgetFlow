@@ -8,6 +8,9 @@ interface AppContextType {
 
 const AppContext = createContext<AppContextType | null>(null)
 
+// Ce fichier n'exporte aucun composant (contexte + hook uniquement),
+// la règle Fast Refresh ne s'applique pas ici.
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAppContext = (): AppContextType => {
 
     const context = useContext(AppContext)
