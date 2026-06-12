@@ -18,6 +18,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         case "HYDRATE_BUDGET":
             return { ...state, budget: action.payload }
 
+        case "HYDRATE_TRANSACTIONS":
+            return { ...state, transactions: action.payload }
+
         case "SET_MONTHLY_INCOME": {
             const existing = state.budget.monthlyIncomes.find(m => m.month === action.payload.month)
             const updated = existing

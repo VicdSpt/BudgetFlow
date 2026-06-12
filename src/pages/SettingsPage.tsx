@@ -22,14 +22,20 @@ export default function SettingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // lire le fichier et dispatcher HYDRATE_GOALS + HYDRATE_BUDGET
+    // lire le fichier et dispatcher HYDRATE_GOALS + HYDRATE_BUDGET + HYDRATE_TRANSACTIONS
     const reader = new FileReader()
 
     reader.onload = (event) => {
-      const content = event.target?.result as string
-      const parsed = JSON.parse(content)
-      dispatch({type: "HYDRATE_BUDGET", payload: parsed.budget})
-      dispatch({type: "HYDRATE_GOALS", payload: parsed.goals})
+      try {
+        const content = event.target?.result as string
+        const parsed = JSON.parse(content)
+        // ?? = fallback si le champ est absent (ex: vieux fichier exporté avant la feature transactions)
+        dispatch({ type: "HYDRATE_BUDGET", payload: parsed.budget ?? { monthlyIncomes: [], spendingList: [] } })
+        dispatch({ type: "HYDRATE_GOALS", payload: parsed.goals ?? [] })
+        dispatch({ type: "HYDRATE_TRANSACTIONS", payload: parsed.transactions ?? [] })
+      } catch {
+        alert("Fichier invalide : impossible de lire cette sauvegarde.")
+      }
     }
 
     reader.readAsText(file)
