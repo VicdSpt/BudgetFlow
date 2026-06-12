@@ -24,7 +24,11 @@
       "Bash(curl -s http://localhost:5173/transactions -o /dev/null -w \"%{http_code}\")",
       "Bash(curl -s http://localhost:5173/goals -o /dev/null -w \" %{http_code}\")",
       "Bash(curl -s http://localhost:5173/budget -o /dev/null -w \" %{http_code}\")",
-      "Bash(curl -s http://localhost:5173/settings -o /dev/null -w \" %{http_code}\")"
+      "Bash(curl -s http://localhost:5173/settings -o /dev/null -w \" %{http_code}\")",
+      "Bash(npx eslint *)",
+      "Bash(sed -n '1,5p' src/features/budget/components/BudgetForm.tsx)",
+      "Bash(sed -n '1,5p' src/features/goals/components/GoalForm.tsx)",
+      "Bash(git push *)"
     ],
     "additionalDirectories": [
       "e:\\ALL DOCUMENTS\\COURS CODE WCS\\budgetflow\\docs\\superpowers\\specs"
