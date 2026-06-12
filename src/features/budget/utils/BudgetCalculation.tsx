@@ -20,6 +20,8 @@ export function expenseForMonth(expense: FixedExpense, month: string): number {
     switch (expense.frequency) {
         case "daily":
         case "weekly":
+            // une dépense journalière/hebdo se cumule sur le mois : on réutilise la conversion mensuelle
+            return monthlyAmount(expense)
         case "monthly":
             return expense.amount
         case "quarterly":
