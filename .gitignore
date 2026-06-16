@@ -14,6 +14,7 @@ dist-ssr
 
 # Claude Code local settings (machine-specific, never share)
 .claude/settings.local.json
+.claude/worktrees/
 
 # Editor directories and files
 .vscode/*
