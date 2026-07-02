@@ -1496,4 +1496,96 @@ Un tooltip en haut de page doit s'ouvrir vers le bas, un tooltip en bas de page 
 
 ---
 
+## 27. Déploiement — les pièges Windows → Linux
+
+### Ce qui s'est passé
+Le build passait sur Windows mais échouait sur Vercel avec `Cannot find module '../../../components/ui/Input'`.
+
+**Cause racine :** git avait enregistré le fichier comme `input.tsx` (minuscule) alors que les imports disaient `Input`. Windows est insensible à la casse → ça marche en local. Linux est sensible à la casse → module introuvable.
+
+**Piège dans le piège :** renommer un fichier juste par la casse n'est PAS détecté par git sous Windows. Il faut forcer avec un renommage en deux étapes :
+
+```bash
+git mv input.tsx Input-tmp.tsx
+git mv Input-tmp.tsx Input.tsx
+```
+
+### Vérifier la casse réelle
+```bash
+git ls-files src/components/ui/   # montre la casse ENREGISTRÉE par git
+```
+L'explorateur Windows peut afficher une casse différente de celle que git a stockée. `git ls-files` est la source de vérité.
+
+### Erreur en cascade
+La 2ème erreur (`Parameter 'event' implicitly has an 'any' type`) n'était PAS un vrai bug : module `Input` introuvable → `<Input onChange={...}>` non typé → `event` tombe en `any`. **Toujours corriger la première erreur d'abord** — les suivantes en découlent souvent.
+
+### SPA + Vercel : le 404 au refresh
+Avec `createBrowserRouter`, l'URL `/goals` n'existe pas côté serveur — seul `index.html` existe. Sans configuration, rafraîchir sur `/goals` → 404. Solution : `vercel.json` :
+
+```json
+{
+  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+}
+```
+
+Toutes les routes servent `index.html`, et React Router prend le relais côté client.
+
+> **En interview :** "pourquoi une SPA a besoin de rewrites en prod ?" est une question courante. La réponse : le routing est côté client, le serveur ne connaît qu'un seul fichier HTML.
+
+---
+
+## 28. Le bug UTC — heure locale vs toISOString()
+
+### Le bug
+```typescript
+const currentMonth = new Date().toISOString().slice(0, 7)  // ❌ UTC !
+```
+
+`toISOString()` renvoie l'heure **UTC**. En France (UTC+1 ou UTC+2), le 1er du mois entre minuit et 2h du matin, cette expression renvoie encore **le mois précédent**. Les revenus s'affichaient sur le mauvais mois.
+
+### La règle
+- **Affichage / logique calendrier utilisateur** → heure locale (`getFullYear()`, `getMonth()`, `getDate()`)
+- **Timestamps techniques** (`createdAt`, logs) → UTC (`toISOString()`) — correct car c'est un point dans le temps absolu
+
+### Le fix : un util partagé
+Le projet avait DEUX implémentations du "mois courant" : une correcte dans `transactionCalculation.ts`, une buguée dans `useBudget.ts`. La duplication a créé le bug. Solution : `src/utils/dateUtils.ts` partagé :
+
+```typescript
+export function getCurrentMonth(): string {
+  const now = new Date()
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+}
+```
+
+**Leçon DRY :** quand deux fichiers implémentent le même concept, tôt ou tard une des versions diverge. Un seul endroit = un seul comportement.
+
+---
+
+## 29. État dérivé vs état stocké
+
+### Le problème
+`Goal.status` peut valoir `"completed"`, mais rien ne le mettait à jour quand `currentSavings` atteignait la cible. L'état stocké devenait **obsolète** par rapport à la réalité calculable.
+
+### La solution : dériver au rendu
+```typescript
+// GoalCard.tsx — l'état calculé prime sur l'état stocké
+const isCompleted = goal.targetSavings > 0 && goal.currentSavings >= goal.targetSavings
+const status = statusConfig[isCompleted ? "completed" : goal.status]
+```
+
+### La règle
+> **Ne stocke jamais ce que tu peux calculer.** Un état dérivé au rendu est toujours à jour ; un état stocké doit être synchronisé manuellement à chaque mutation — et on oublie toujours un cas.
+
+C'est le même principe que `percentageComplete()` : on ne stocke pas le pourcentage, on le calcule depuis `currentSavings / targetSavings`.
+
+### Validation de formulaire : HTML + JS
+```typescript
+// required HTML ne suffit pas : "abc" passe la validation puis parseFloat donne 0
+if (!parsed.name || parsed.targetSavings <= 0) return
+```
+
+`required` bloque le champ vide, mais pas les valeurs invalides après parsing. **Toujours doubler la validation HTML d'une garde en JS** — et côté serveur dans une vraie app full-stack.
+
+---
+
 *Document mis à jour au fur et à mesure de l'avancement du projet.*
