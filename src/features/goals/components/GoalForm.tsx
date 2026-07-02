@@ -58,6 +58,21 @@ export default function GoalForm({ onClose, goal }: GoalFormProps) {
 
             <Input label="Date limite" type="date" value={formData.deadlineDate} onChange={(event) => setFormData({ ...formData, deadlineDate: event.target.value })} />
 
+            {goal && (
+                <div className="flex flex-col gap-1 w-full">
+                    <label className="text-sm font-medium text-slate-600">Statut</label>
+                    <select
+                        value={formData.status}
+                        onChange={(event) => setFormData({ ...formData, status: event.target.value as GoalStatus })}
+                        className="w-full px-3 py-2 rounded-lg border border-slate-200 text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
+                    >
+                        <option value="active">Actif</option>
+                        <option value="paused">En pause</option>
+                        <option value="completed">Terminé</option>
+                    </select>
+                </div>
+            )}
+
             <div className="flex justify-end gap-2 pt-2">
                 <Button type="button" variant="ghost" onClick={onClose}>Annuler</Button>
                 <Button type="submit" variant="primary">{goal ? "Modifier" : "Ajouter"}</Button>

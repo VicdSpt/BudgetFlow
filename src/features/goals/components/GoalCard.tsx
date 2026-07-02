@@ -19,7 +19,10 @@ export default function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
   const percent = percentageComplete(goal.currentSavings, goal.targetSavings)
   const suggested = goal.deadlineDate ? suggestedMonthlyContribution(goal.currentSavings, goal.targetSavings, goal.deadlineDate) : null
   const months = goal.deadlineDate ? monthsUntilDeadline(goal.deadlineDate) : null
-  const status = statusConfig[goal.status]
+  // Statut dérivé : un objectif dont la cible est atteinte est "Terminé",
+  // quel que soit le statut stocké (état calculé > état stocké obsolète)
+  const isCompleted = goal.targetSavings > 0 && goal.currentSavings >= goal.targetSavings
+  const status = statusConfig[isCompleted ? "completed" : goal.status]
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col gap-5">
