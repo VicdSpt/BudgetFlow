@@ -4,8 +4,8 @@ import {
   filterTransactions,
   totalByCategory,
   totalForMonth,
-  getCurrentMonth,
 } from '../utils/transactionCalculation'
+import { getCurrentMonth } from '../../../utils/dateUtils'
 import type { Transaction, TransactionFilter } from '../types/transaction.type'
 
 export function useTransactions() {

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useBudget } from "../hooks/useBudget"
 import { expenseForMonth, getNext12Months, formatMonth } from "../utils/BudgetCalculation"
+import { getCurrentMonth } from "../../../utils/dateUtils"
 import Input from "../../../components/ui/Input"
 import Button from "../../../components/ui/Button"
 
@@ -40,7 +41,7 @@ export default function BudgetMonthlyView() {
                             const expenses = getExpenses(month)
                             const available = income - expenses
                             const isEditing = editingMonth === month
-                            const isCurrentMonth = month === new Date().toISOString().slice(0, 7)
+                            const isCurrentMonth = month === getCurrentMonth()
 
                             return (
                                 <tr key={month} className={`border-b border-slate-50 ${isCurrentMonth ? "bg-emerald-50/50" : ""}`}>

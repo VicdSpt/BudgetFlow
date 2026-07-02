@@ -1,11 +1,12 @@
 import { useAppContext } from "../../../context/AppContext";
 import type { FixedExpense } from "../types/budget.type";
 import { monthlyAmount } from "../utils/BudgetCalculation";
+import { getCurrentMonth } from "../../../utils/dateUtils";
 
 export function useBudget() {
   const { state, dispatch } = useAppContext();
 
-  const currentMonth = new Date().toISOString().slice(0, 7) // "YYYY-MM"
+  const currentMonth = getCurrentMonth() // "YYYY-MM" en heure locale
 
   const currentMonthEntry = state.budget.monthlyIncomes.find(m => m.month === currentMonth)
   const currentIncome = currentMonthEntry?.income ?? 0

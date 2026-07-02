@@ -3,6 +3,7 @@ import type { Transaction, TransactionCategory, TransactionTag } from '../types/
 import { CATEGORY_LABELS } from '../utils/transactionCalculation'
 import Input from '../../../components/ui/Input'
 import Button from '../../../components/ui/Button'
+import { getToday } from '../../../utils/dateUtils'
 
 interface TransactionFormProps {
   initial?: Transaction
@@ -17,7 +18,7 @@ const TAG_LABELS: Record<TransactionTag, string> = {
 }
 
 export default function TransactionForm({ initial, onSubmit, onCancel }: TransactionFormProps) {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getToday()
 
   const [amount, setAmount] = useState(initial ? String(initial.amount) : '')
   const [category, setCategory] = useState<TransactionCategory>(initial?.category ?? 'other')
