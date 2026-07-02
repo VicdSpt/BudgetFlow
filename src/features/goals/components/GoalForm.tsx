@@ -26,9 +26,12 @@ export default function GoalForm({ onClose, goal }: GoalFormProps) {
         event.preventDefault()
         const parsed = {
             ...formData,
+            name: formData.name.trim(),
             targetSavings: parseFloat(formData.targetSavings.replace(",", ".")) || 0,
             currentSavings: parseFloat(formData.currentSavings.replace(",", ".")) || 0,
         }
+        // required HTML ne suffit pas : "abc" passe puis parseFloat donne 0
+        if (!parsed.name || parsed.targetSavings <= 0) return
         if (goal) {
             updateGoal({ ...parsed, id: goal.id })
         } else {
@@ -47,12 +50,12 @@ export default function GoalForm({ onClose, goal }: GoalFormProps) {
 
     return (
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <Input label="Nom de l'objectif" value={formData.name} onChange={(event) => setFormData({ ...formData, name: event.target.value })} />
+            <Input label="Nom de l'objectif" value={formData.name} onChange={(event) => setFormData({ ...formData, name: event.target.value })} required />
 
             <Input label="Description" value={formData.description} onChange={(event) => setFormData({ ...formData, description: event.target.value })} />
 
             <div className="grid grid-cols-2 gap-4">
-                <Input label="Montant cible (€)" type="text" inputMode="decimal" value={formData.targetSavings} onChange={(event) => setFormData({ ...formData, targetSavings: event.target.value })} />
+                <Input label="Montant cible (€)" type="text" inputMode="decimal" value={formData.targetSavings} onChange={(event) => setFormData({ ...formData, targetSavings: event.target.value })} required />
                 <Input label="Épargne actuelle (€)" type="text" inputMode="decimal" value={formData.currentSavings} onChange={(event) => setFormData({ ...formData, currentSavings: event.target.value })} />
             </div>
 
