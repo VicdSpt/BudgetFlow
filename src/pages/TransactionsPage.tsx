@@ -6,6 +6,7 @@ import TransactionForm from '../features/transactions/components/TransactionForm
 import Modal from '../components/ui/Modal'
 import Button from '../components/ui/Button'
 import InfoTooltip from '../components/ui/InfoTooltip'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
 import type { Transaction } from '../features/transactions/types/transaction.type'
 
 export default function TransactionsPage() {
@@ -22,6 +23,14 @@ export default function TransactionsPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTransaction, setEditingTransaction] = useState<Transaction | undefined>(undefined)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+
+  const pendingTransaction = filtered.find(t => t.id === pendingDeleteId)
+
+  const confirmDelete = () => {
+    if (pendingDeleteId) remove(pendingDeleteId)
+    setPendingDeleteId(null)
+  }
 
   const handleOpenAdd = () => {
     setEditingTransaction(undefined)
@@ -81,7 +90,7 @@ export default function TransactionsPage() {
           filter={filter}
           onFilterChange={setFilter}
           onEdit={handleOpenEdit}
-          onDelete={remove}
+          onDelete={setPendingDeleteId}
         />
       </div>
 
@@ -96,6 +105,14 @@ export default function TransactionsPage() {
           onCancel={() => setIsModalOpen(false)}
         />
       </Modal>
+
+      <ConfirmDialog
+        isOpen={pendingDeleteId !== null}
+        title="Supprimer la dépense"
+        message={`Supprimer « ${pendingTransaction?.description ?? ""} » (${pendingTransaction?.amount.toFixed(2) ?? ""}€) ? Cette action est irréversible.`}
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDeleteId(null)}
+      />
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useBudget } from "../hooks/useBudget"
 import Button from "../../../components/ui/Button"
+import ConfirmDialog from "../../../components/ui/ConfirmDialog"
 import { X, Pencil, Check } from 'lucide-react'
 import type { FixedExpense, ExpenseFrequency, ExpenseCategory } from "../types/budget.type"
 import { monthlyAmount } from "../utils/BudgetCalculation"
@@ -29,6 +30,14 @@ export default function BudgetSummary() {
     const { budget, availableBudget, deleteExpense, updateExpense, currentIncome, totalMonthlyExpenses } = useBudget()
     const [editingId, setEditingId] = useState<string | null>(null)
     const [editForm, setEditForm] = useState<{ name: string; amount: string; frequency: ExpenseFrequency; category: ExpenseCategory } | null>(null)
+    const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+
+    const pendingExpense = budget.spendingList.find(e => e.id === pendingDeleteId)
+
+    const confirmDelete = () => {
+        if (pendingDeleteId) deleteExpense(pendingDeleteId)
+        setPendingDeleteId(null)
+    }
 
     const spentPercent = currentIncome > 0 ? Math.min((totalMonthlyExpenses / currentIncome) * 100, 100) : 0
 
@@ -125,7 +134,7 @@ export default function BudgetSummary() {
                                     <Button variant="ghost" onClick={() => startEdit(expense)}>
                                         <Pencil size={13} />
                                     </Button>
-                                    <Button variant="ghost" onClick={() => deleteExpense(expense.id)}>
+                                    <Button variant="ghost" onClick={() => setPendingDeleteId(expense.id)}>
                                         <X size={13} />
                                     </Button>
                                 </div>
@@ -163,6 +172,14 @@ export default function BudgetSummary() {
                     {availableBudget.toFixed(2)}€
                 </span>
             </div>
+
+            <ConfirmDialog
+                isOpen={pendingDeleteId !== null}
+                title="Supprimer la dépense fixe"
+                message={`Supprimer « ${pendingExpense?.name ?? ""} » ? Cette action est irréversible.`}
+                onConfirm={confirmDelete}
+                onCancel={() => setPendingDeleteId(null)}
+            />
         </div>
     )
 }
