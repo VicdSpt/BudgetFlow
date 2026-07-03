@@ -9,12 +9,12 @@ interface ButtonProps {
 export default function Button({ children, variant, onClick, disabled, type = 'button' }: ButtonProps) {
 
     const varientButton: Record<ButtonProps["variant"], string> = {
-        primary: "bg-blue-600 text-white hover:bg-blue-700",
-        secondary: "bg-yellow-500 text-white hover:bg-yellow-600",
-        danger: "bg-red-500 text-white hover:bg-red-600",
+        primary: "bg-emerald-600 text-white hover:bg-emerald-700",
+        secondary: "bg-slate-100 text-slate-700 hover:bg-slate-200",
+        danger: "bg-rose-500 text-white hover:bg-rose-600",
         success: "bg-green-600 text-white hover:bg-green-700",
         warning: "bg-orange-600 text-white hover:bg-orange-700",
-        ghost: "text-gray-500 hover:text-gray-800 bg-transparent"
+        ghost: "text-slate-500 hover:text-slate-800 bg-transparent"
     }
     return (
         <button type={type} onClick={onClick}
