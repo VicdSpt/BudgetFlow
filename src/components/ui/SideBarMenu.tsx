@@ -1,19 +1,11 @@
 import { Link, useLocation } from "react-router-dom"
-import { LayoutDashboard, Target, Wallet, Receipt, Settings } from "lucide-react"
-
-const navItems = [
-    { to: "/", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/goals", label: "Objectifs", icon: Target },
-    { to: "/budget", label: "Budget", icon: Wallet },
-    { to: "/transactions", label: "Dépenses", icon: Receipt },
-    { to: "/settings", label: "Paramètres", icon: Settings },
-]
+import { navItems } from "./navItems"
 
 export default function SideBarMenu() {
     const location = useLocation()
 
     return (
-        <nav className="w-64 shrink-0 h-screen sticky top-0 bg-white border-r border-slate-100 flex flex-col">
+        <nav className="w-64 shrink-0 h-screen sticky top-0 bg-white border-r border-slate-100 hidden md:flex flex-col">
             <div className="px-6 py-5 border-b border-slate-100">
                 <span className="text-lg font-semibold text-slate-800">BudgetFlow</span>
             </div>
