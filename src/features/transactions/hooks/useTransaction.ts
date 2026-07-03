@@ -18,7 +18,11 @@ export function useTransactions() {
   })
 
   const filtered = useMemo(
-    () => filterTransactions(state.transactions, filter),
+    () =>
+      filterTransactions(state.transactions, filter)
+        // tri par date décroissante (les dates YYYY-MM-DD se comparent alphabétiquement),
+        // puis par createdAt pour départager deux dépenses du même jour
+        .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)),
     [state.transactions, filter]
   )
 
