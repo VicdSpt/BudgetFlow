@@ -1588,4 +1588,89 @@ if (!parsed.name || parsed.targetSavings <= 0) return
 
 ---
 
+## 30. Responsive mobile — breakpoints Tailwind
+
+### Le principe : mobile-first
+Tailwind est **mobile-first** : les classes sans préfixe s'appliquent partout, les préfixes (`sm:`, `md:`, `lg:`) s'appliquent **à partir de** cette taille d'écran.
+
+```tsx
+// Sidebar : cachée sur mobile, visible en flex dès 768px (md)
+<nav className="... hidden md:flex flex-col">
+
+// Menu mobile : visible sur mobile, caché dès 768px
+<header className="md:hidden sticky top-0 z-40 ...">
+
+// Grille : 1 colonne sur mobile, 3 dès 640px (sm)
+<div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+```
+
+### Le pattern nav responsive
+Deux composants, une seule source de vérité :
+- `navItems.ts` — la config partagée (routes, labels, icônes)
+- `SideBarMenu.tsx` — desktop (`hidden md:flex`)
+- `MobileNav.tsx` — mobile (`md:hidden`), hamburger + drawer, ferme au clic sur un lien (`onClick={() => setIsOpen(false)}`)
+
+**Pourquoi extraire `navItems`** : si les deux menus dupliquaient la liste, ajouter une page demanderait de penser à modifier deux fichiers. Une config partagée = un seul point de modification. Même leçon DRY que `dateUtils`.
+
+> **En interview :** "mobile-first" signifie concevoir d'abord pour le petit écran puis enrichir, pas l'inverse. Les media queries de Tailwind sont des `min-width`, jamais des `max-width`.
+
+---
+
+## 31. Patterns UX — confirmation, empty state, démo
+
+### ConfirmDialog — composition de composants
+Plutôt qu'un `window.confirm()` (bloquant, non stylable), on **compose** avec le Modal existant :
+
+```tsx
+export default function ConfirmDialog({ isOpen, title, message, onConfirm, onCancel }: ConfirmDialogProps) {
+  return (
+    <Modal isOpen={isOpen} onClose={onCancel} title={title}>
+      <p className="text-sm text-slate-600 mb-5">{message}</p>
+      <div className="flex justify-end gap-2">
+        <Button variant="ghost" onClick={onCancel}>Annuler</Button>
+        <Button variant="danger" onClick={onConfirm}>Supprimer</Button>
+      </div>
+    </Modal>
+  )
+}
+```
+
+### Le pattern "pendingDeleteId"
+On ne supprime plus directement : on **stocke l'intention** puis on confirme.
+
+```tsx
+const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+
+// Le bouton ne supprime plus, il "propose" :
+onDelete={setPendingDeleteId}
+
+// La suppression réelle n'arrive qu'à la confirmation :
+const confirmDelete = () => {
+  if (pendingDeleteId) deleteGoal(pendingDeleteId)
+  setPendingDeleteId(null)
+}
+```
+
+`pendingDeleteId !== null` pilote l'ouverture de la modal — encore de l'**état dérivé** (pas de `isModalOpen` séparé à synchroniser).
+
+### Empty state actionnable + données de démo
+Un dashboard vide est un cul-de-sac UX : l'utilisateur (ou le recruteur !) ne voit rien du produit. Solution : détecter la vacuité et proposer une action.
+
+```tsx
+const isAppEmpty = state.goals.length === 0 && state.transactions.length === 0 && ...
+```
+
+Les données de démo sont générées **relativement à la date du jour** (`monthWithOffset(-1)`, `monthWithOffset(+5)`) : les graphiques restent pertinents quel que soit le moment de la visite, contrairement à des dates codées en dur qui deviendraient obsolètes.
+
+### Tri de dates ISO — l'astuce localeCompare
+```typescript
+.sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
+```
+
+Les dates `YYYY-MM-DD` se trient **alphabétiquement** — c'est tout l'intérêt du format ISO. Le `||` enchaîne les critères : si les dates sont égales (`localeCompare` renvoie 0, falsy), on départage par `createdAt`.
+
+**Piège évité** : `.sort()` mute le tableau. Ici c'est sûr uniquement parce que `filterTransactions` renvoie déjà une copie (`.filter()` crée un nouveau tableau). Ne jamais trier `state.xxx` directement.
+
+---
+
 *Document mis à jour au fur et à mesure de l'avancement du projet.*
