@@ -1,11 +1,22 @@
 import { useAppContext } from "../context/AppContext"
 import Button from "../components/ui/Button"
 import InfoTooltip from "../components/ui/InfoTooltip"
-import { useRef } from "react"
+import ConfirmDialog from "../components/ui/ConfirmDialog"
+import { buildDemoData } from "../utils/demoData"
+import { useRef, useState } from "react"
 
 export default function SettingsPage() {
   const { state, dispatch } = useAppContext()
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isDemoConfirmOpen, setIsDemoConfirmOpen] = useState(false)
+
+  const loadDemoData = () => {
+    const demo = buildDemoData()
+    dispatch({ type: "HYDRATE_GOALS", payload: demo.goals })
+    dispatch({ type: "HYDRATE_BUDGET", payload: demo.budget })
+    dispatch({ type: "HYDRATE_TRANSACTIONS", payload: demo.transactions })
+    setIsDemoConfirmOpen(false)
+  }
 
   const handleExport = () => {
     const data = JSON.stringify(state, null, 2)
@@ -61,6 +72,21 @@ export default function SettingsPage() {
         </div>
         <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
       </div>
+
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+        <h2 className="font-semibold text-slate-800 mb-1">Données de démonstration</h2>
+        <p className="text-sm text-slate-500 mb-4">Remplissez l'application avec un jeu de données réaliste pour découvrir toutes les fonctionnalités</p>
+        <Button variant="secondary" onClick={() => setIsDemoConfirmOpen(true)}>Charger les données de démo</Button>
+      </div>
+
+      <ConfirmDialog
+        isOpen={isDemoConfirmOpen}
+        title="Charger les données de démo"
+        message="Vos données actuelles (objectifs, budget, dépenses) seront remplacées par le jeu de démonstration. Pensez à exporter avant si vous voulez les conserver."
+        confirmLabel="Charger"
+        onConfirm={loadDemoData}
+        onCancel={() => setIsDemoConfirmOpen(false)}
+      />
     </div>
   )
 }
