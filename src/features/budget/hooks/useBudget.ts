@@ -16,7 +16,7 @@ export function useBudget() {
   };
 
   const addExpense = (expense: Omit<FixedExpense, "id">) => {
-    dispatch({ type: "ADD_EXPENSE", payload: expense });
+    dispatch({ type: "ADD_EXPENSE", payload: { ...expense, id: crypto.randomUUID() } });
   };
 
   const updateExpense = (expense: FixedExpense) => {

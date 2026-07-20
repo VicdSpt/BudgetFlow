@@ -1,10 +1,9 @@
 import type { AppState, AppAction } from "../types/common.type";
-import type { Transaction } from "../features/transactions/types/transaction.type";
 
 export function appReducer(state: AppState, action: AppAction): AppState {
     switch (action.type) {
         case "ADD_GOAL":
-            return { ...state, goals: [...state.goals, { ...action.payload, id: crypto.randomUUID() }] }
+            return { ...state, goals: [...state.goals, action.payload] }
 
         case "DELETE_GOAL":
             return { ...state, goals: state.goals.filter(goal => goal.id !== action.payload) }
@@ -30,7 +29,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         }
 
         case "ADD_EXPENSE":
-            return { ...state, budget: { ...state.budget, spendingList: [...state.budget.spendingList, { ...action.payload, id: crypto.randomUUID() }] } }
+            return { ...state, budget: { ...state.budget, spendingList: [...state.budget.spendingList, action.payload] } }
 
         case "UPDATE_EXPENSE":
             return { ...state, budget: { ...state.budget, spendingList: state.budget.spendingList.map(e => e.id === action.payload.id ? action.payload : e) } }
@@ -44,14 +43,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
         case "RESET_EXPENSES":
             return { ...state, budget: { ...state.budget, spendingList: [] } }
 
-        case "ADD_TRANSACTION": {
-            const newTransaction: Transaction = {
-                ...action.payload,
-                id: crypto.randomUUID(),
-                createdAt: new Date().toISOString(),
-            }
-            return { ...state, transactions: [...state.transactions, newTransaction] }
-        }
+        case "ADD_TRANSACTION":
+            return { ...state, transactions: [...state.transactions, action.payload] }
 
         case "UPDATE_TRANSACTION":
             return {

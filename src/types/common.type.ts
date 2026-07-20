@@ -15,14 +15,14 @@ export type AppState = {
 }
 
 export type AppAction =
-  | { type: 'ADD_GOAL'; payload: Omit<Goal, 'id'> }
+  | { type: 'ADD_GOAL'; payload: Goal }
   | { type: 'DELETE_GOAL'; payload: string }
   | { type: 'UPDATE_GOAL'; payload: Goal }
   | { type: 'HYDRATE_GOALS'; payload: Goal[] }
   | { type: 'HYDRATE_BUDGET'; payload: GlobalBudget }
   | { type: 'HYDRATE_TRANSACTIONS'; payload: Transaction[] }
   | { type: 'SET_MONTHLY_INCOME'; payload: MonthlyIncome }
-  | { type: 'ADD_EXPENSE'; payload: Omit<FixedExpense, 'id'> }
+  | { type: 'ADD_EXPENSE'; payload: FixedExpense }
   | { type: 'UPDATE_EXPENSE'; payload: FixedExpense }
   | { type: 'DELETE_EXPENSE'; payload: string }
   | { type: 'RESET_INCOME' }

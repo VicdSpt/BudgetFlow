@@ -37,7 +37,10 @@ export function useTransactions() {
   )
 
   const add = (payload: Omit<Transaction, 'id' | 'createdAt'>) => {
-    dispatch({ type: 'ADD_TRANSACTION', payload })
+    dispatch({
+      type: 'ADD_TRANSACTION',
+      payload: { ...payload, id: crypto.randomUUID(), createdAt: new Date().toISOString() },
+    })
   }
 
   const update = (transaction: Transaction) => {

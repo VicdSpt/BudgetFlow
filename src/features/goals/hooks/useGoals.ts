@@ -5,7 +5,7 @@ export function useGoals(){
     const {state, dispatch} = useAppContext();
 
     const addGoal = (goal: Omit<Goal, "id">) => {
-        dispatch({ type: "ADD_GOAL", payload: goal });
+        dispatch({ type: "ADD_GOAL", payload: { ...goal, id: crypto.randomUUID() } });
     }
 
     const updateGoal = (goal: Goal) => {
