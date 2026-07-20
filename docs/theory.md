@@ -1673,4 +1673,45 @@ Les dates `YYYY-MM-DD` se trient **alphabétiquement** — c'est tout l'intérê
 
 ---
 
+## 32. Full stack — Supabase : auth, RLS et synchronisation
+
+### L'architecture en une phrase
+Mode invité inchangé (localStorage) ; connecté, chaque action du reducer est **reflétée** vers PostgreSQL via un dispatch enrichi, et la connexion **hydrate** le state depuis 4 tables relationnelles.
+
+### Row Level Security — la sécurité dans la base
+```sql
+create policy "own rows" on goals for all
+  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
+La clé `anon` est **publique par design** : c'est la policy qui garantit que chaque utilisateur ne lit/écrit que ses lignes. `using` filtre les lectures/suppressions, `with check` bloque les écritures frauduleuses (y compris la réassignation de `user_id`).
+
+> **En interview :** "où placez-vous la sécurité ?" — jamais uniquement côté client. Ici elle est dans la base ; le client compromis ne peut rien lire d'autrui.
+
+### Le dispatch enrichi — optimistic update
+```typescript
+const syncDispatch = useCallback((action: AppAction) => {
+    dispatch(action)                              // 1. l'UI réagit immédiatement
+    if (session) syncToSupabase(action, userId)   // 2. cloud en arrière-plan
+}, [session])
+```
+L'UI n'attend jamais le réseau. Trade-off assumé (v1) : pas de rollback si l'écriture échoue. Les actions correspondent 1:1 aux opérations SQL (`ADD_*` → insert, `SET_MONTHLY_INCOME` → **upsert** grâce à la clé primaire composée `(user_id, month)`).
+
+### Reducer pur — pourquoi les id sortent du reducer
+`crypto.randomUUID()` dans un reducer = impureté (StrictMode ré-exécute, résultats différents) ET la couche de sync a besoin de l'id **avant** le dispatch. Les hooks génèrent maintenant l'entité complète ; le reducer ne fait qu'appliquer.
+
+### Mappers explicites — camelCase ↔ snake_case
+Une paire `goalToRow`/`rowToGoal` par entité. Ennuyeux, mais typé et explicite. Subtilité : `deadlineDate || null` (pas `??`) car le formulaire stocke `""` pour "pas de date" — et une colonne SQL `date` refuse une chaîne vide.
+
+### Le bug le plus instructif du projet : la race condition à la déconnexion
+Deux `useEffect` dépendent de `session` : l'écriture localStorage (invité) et l'hydratation. À la déconnexion, ils s'exécutent **dans l'ordre de définition** : l'écriture partait AVANT la restauration → les données du compte écrasaient le localStorage invité. Fix : un `useRef` drapeau (`isGuestStateLive`) lu **à l'exécution** (pas capturé par closure) qui bloque l'écriture tant que la ré-hydratation invité n'a pas eu lieu.
+
+Deuxième subtilité : l'effet d'hydratation était keyé sur `[session]` — or Supabase émet un **nouvel objet** Session à chaque refresh de token (même utilisateur !) → ré-hydratations parasites. Fix : keyer sur `session?.user.id` (une valeur stable), pas sur l'objet.
+
+> **En interview :** ces deux bugs illustrent les questions classiques sur `useEffect` : ordre d'exécution des effets, identité référentielle des dépendances, et refs vs closures.
+
+### Migration des données invité
+À la première connexion, si le compte est vide et que l'appareil a des données : prompt d'import → bulk insert. Piège corrigé en review : **supabase-js ne throw pas** sur une erreur d'insert (il résout avec `{ error }`) — sans vérification, un échec réseau aurait quand même effacé le localStorage : perte de données silencieuse. Toujours vérifier `result.error` avec Supabase.
+
+---
+
 *Document mis à jour au fur et à mesure de l'avancement du projet.*
