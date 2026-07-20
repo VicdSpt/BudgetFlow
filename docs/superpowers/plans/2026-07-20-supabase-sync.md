@@ -143,10 +143,17 @@ VITE_SUPABASE_ANON_KEY=
 ```typescript
 import { createClient } from '@supabase/supabase-js'
 
-export const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-)
+// Fallback placeholder : sans .env.local (projet Supabase pas encore créé),
+// l'app doit démarrer en mode invité — createClient(undefined) crasherait au chargement.
+// L'auth échouera proprement (erreur réseau) tant que les vraies clés ne sont pas configurées.
+const url = import.meta.env.VITE_SUPABASE_URL || 'https://placeholder.supabase.co'
+const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'placeholder-anon-key'
+
+if (!import.meta.env.VITE_SUPABASE_URL) {
+  console.warn('[supabase] VITE_SUPABASE_URL manquante — mode invité uniquement (voir .env.example)')
+}
+
+export const supabase = createClient(url, anonKey)
 ```
 
 - [ ] **Step 5 : Actions manuelles (utilisateur)**
