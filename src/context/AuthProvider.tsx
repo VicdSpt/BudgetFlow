@@ -18,10 +18,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         // Restaure la session existante au démarrage (supabase-js la stocke lui-même)
-        supabase.auth.getSession().then(({ data }) => {
-            setSession(data.session)
-            setIsAuthLoading(false)
-        })
+        supabase.auth.getSession()
+            .then(({ data }) => setSession(data.session))
+            .catch(() => { /* session reste null — mode invité */ })
+            .finally(() => setIsAuthLoading(false))
 
         const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
             setSession(newSession)
