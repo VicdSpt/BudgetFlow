@@ -6,10 +6,12 @@ import InfoTooltip from "../components/ui/InfoTooltip"
 import Button from "../components/ui/Button"
 import ConfirmDialog from "../components/ui/ConfirmDialog"
 import { useAppContext } from "../context/AppContext"
+import { useAuth } from "../context/AuthContext"
 import { buildDemoData } from "../utils/demoData"
 
 export default function DashboardPage() {
   const { state, dispatch } = useAppContext()
+  const { session } = useAuth()
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false)
 
   const isAppEmpty =
@@ -42,7 +44,7 @@ export default function DashboardPage() {
           </div>
           <p className="text-sm text-slate-500 mt-1">Vue d'ensemble de votre épargne</p>
         </div>
-        {!isAppEmpty && (
+        {!isAppEmpty && !session && (
           <Button variant="secondary" onClick={() => setIsResetConfirmOpen(true)}>
             <span className="flex items-center gap-1.5">
               <RotateCcw size={14} />
@@ -52,7 +54,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {isAppEmpty && (
+      {isAppEmpty && !session && (
         <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <Sparkles size={20} className="text-emerald-600 shrink-0 mt-0.5" />

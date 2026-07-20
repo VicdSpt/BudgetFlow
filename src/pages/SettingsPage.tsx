@@ -1,4 +1,5 @@
 import { useAppContext } from "../context/AppContext"
+import { useAuth } from "../context/AuthContext"
 import Button from "../components/ui/Button"
 import InfoTooltip from "../components/ui/InfoTooltip"
 import ConfirmDialog from "../components/ui/ConfirmDialog"
@@ -7,6 +8,7 @@ import { useRef, useState } from "react"
 
 export default function SettingsPage() {
   const { state, dispatch } = useAppContext()
+  const { session } = useAuth()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isDemoConfirmOpen, setIsDemoConfirmOpen] = useState(false)
 
@@ -68,16 +70,20 @@ export default function SettingsPage() {
         <p className="text-sm text-slate-500 mb-4">Exportez vos données pour les sauvegarder ou les transférer sur un autre appareil</p>
         <div className="flex gap-3">
           <Button variant="primary" onClick={handleExport}>Exporter JSON</Button>
-          <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>Importer JSON</Button>
+          {!session && (
+            <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>Importer JSON</Button>
+          )}
         </div>
         <input ref={fileInputRef} type="file" accept=".json" onChange={handleImport} className="hidden" />
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
-        <h2 className="font-semibold text-slate-800 mb-1">Données de démonstration</h2>
-        <p className="text-sm text-slate-500 mb-4">Remplissez l'application avec un jeu de données réaliste pour découvrir toutes les fonctionnalités</p>
-        <Button variant="secondary" onClick={() => setIsDemoConfirmOpen(true)}>Charger les données de démo</Button>
-      </div>
+      {!session && (
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5">
+          <h2 className="font-semibold text-slate-800 mb-1">Données de démonstration</h2>
+          <p className="text-sm text-slate-500 mb-4">Remplissez l'application avec un jeu de données réaliste pour découvrir toutes les fonctionnalités</p>
+          <Button variant="secondary" onClick={() => setIsDemoConfirmOpen(true)}>Charger les données de démo</Button>
+        </div>
+      )}
 
       <ConfirmDialog
         isOpen={isDemoConfirmOpen}
