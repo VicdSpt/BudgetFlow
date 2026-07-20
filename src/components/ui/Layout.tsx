@@ -7,7 +7,8 @@ export default function Layout() {
     <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
       <MobileNav />
       <SideBarMenu />
-      <main className="flex-1 p-4 md:p-6 w-full">
+      {/* pb-20 : réserve la place de la bottom bar mobile (fixed) */}
+      <main className="flex-1 p-4 pb-20 md:p-6 md:pb-6 w-full">
         <Outlet />
       </main>
     </div>
