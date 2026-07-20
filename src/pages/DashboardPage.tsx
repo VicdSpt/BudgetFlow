@@ -1,13 +1,16 @@
-import { Sparkles } from "lucide-react"
+import { useState } from "react"
+import { Sparkles, RotateCcw } from "lucide-react"
 import GlobalProgress from "../features/dashboard/components/GlobalProgress"
 import SavingsChart from "../features/dashboard/components/SavingsChart"
 import InfoTooltip from "../components/ui/InfoTooltip"
 import Button from "../components/ui/Button"
+import ConfirmDialog from "../components/ui/ConfirmDialog"
 import { useAppContext } from "../context/AppContext"
 import { buildDemoData } from "../utils/demoData"
 
 export default function DashboardPage() {
   const { state, dispatch } = useAppContext()
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false)
 
   const isAppEmpty =
     state.goals.length === 0 &&
@@ -22,9 +25,16 @@ export default function DashboardPage() {
     dispatch({ type: "HYDRATE_TRANSACTIONS", payload: demo.transactions })
   }
 
+  const resetAll = () => {
+    dispatch({ type: "HYDRATE_GOALS", payload: [] })
+    dispatch({ type: "HYDRATE_BUDGET", payload: { monthlyIncomes: [], spendingList: [] } })
+    dispatch({ type: "HYDRATE_TRANSACTIONS", payload: [] })
+    setIsResetConfirmOpen(false)
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
+      <div className="flex items-start justify-between gap-2">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-2xl font-semibold text-slate-800">Dashboard</h1>
@@ -32,6 +42,14 @@ export default function DashboardPage() {
           </div>
           <p className="text-sm text-slate-500 mt-1">Vue d'ensemble de votre épargne</p>
         </div>
+        {!isAppEmpty && (
+          <Button variant="secondary" onClick={() => setIsResetConfirmOpen(true)}>
+            <span className="flex items-center gap-1.5">
+              <RotateCcw size={14} />
+              Réinitialiser
+            </span>
+          </Button>
+        )}
       </div>
 
       {isAppEmpty && (
@@ -52,6 +70,15 @@ export default function DashboardPage() {
         <h2 className="font-semibold text-slate-800 mb-4">Épargne par objectif</h2>
         <SavingsChart />
       </div>
+
+      <ConfirmDialog
+        isOpen={isResetConfirmOpen}
+        title="Tout réinitialiser"
+        message="Tous vos objectifs, votre budget et vos dépenses seront définitivement supprimés. Pensez à exporter vos données (Paramètres) si vous voulez les conserver."
+        confirmLabel="Tout supprimer"
+        onConfirm={resetAll}
+        onCancel={() => setIsResetConfirmOpen(false)}
+      />
     </div>
   )
 }
