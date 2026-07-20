@@ -2,10 +2,12 @@ import { Link, useLocation } from "react-router-dom"
 import { LogIn, LogOut } from "lucide-react"
 import { navItems } from "./navItems"
 import { useAuth } from "../../context/AuthContext"
+import { useAppContext } from "../../context/AppContext"
 
 export default function SideBarMenu() {
     const location = useLocation()
     const { session, signOut } = useAuth()
+    const { isSyncLoading } = useAppContext()
 
     return (
         <nav className="w-64 shrink-0 h-screen sticky top-0 bg-white border-r border-slate-100 hidden md:flex flex-col">
@@ -32,17 +34,20 @@ export default function SideBarMenu() {
             </div>
             <div className="px-3 py-4 border-t border-slate-100">
                 {session ? (
-                    <div className="flex items-center justify-between gap-2 px-3">
-                        <span className="text-xs text-slate-500 truncate" title={session.user.email}>
-                            {session.user.email}
-                        </span>
-                        <button
-                            onClick={signOut}
-                            title="Se déconnecter"
-                            className="text-slate-400 hover:text-rose-500 transition-colors shrink-0"
-                        >
-                            <LogOut size={16} />
-                        </button>
+                    <div>
+                        <div className="flex items-center justify-between gap-2 px-3">
+                            <span className="text-xs text-slate-500 truncate" title={session.user.email}>
+                                {session.user.email}
+                            </span>
+                            <button
+                                onClick={signOut}
+                                title="Se déconnecter"
+                                className="text-slate-400 hover:text-rose-500 transition-colors shrink-0"
+                            >
+                                <LogOut size={16} />
+                            </button>
+                        </div>
+                        {isSyncLoading && <p className="text-xs text-slate-400 px-3 mt-1">Synchronisation…</p>}
                     </div>
                 ) : (
                     <Link

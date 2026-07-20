@@ -1,8 +1,9 @@
-import { useReducer, useEffect, useCallback } from "react"
+import { useReducer, useEffect, useCallback, useState } from "react"
 import AppContext from "./AppContext"
 import { appReducer } from "./AppReducer"
 import { useAuth } from "./AuthContext"
 import { syncToSupabase } from "../lib/syncToSupabase"
+import { fetchUserData } from "../lib/fetchUserData"
 import type { AppState, AppAction } from "../types/common.type"
 
 const emptyBudget = { monthlyIncomes: [], spendingList: [] }
@@ -25,6 +26,7 @@ const getGuestState = (): AppState => {
 export function AppProvider({ children }: { children: React.ReactNode }) {
     const { session } = useAuth()
     const [state, dispatch] = useReducer(appReducer, getGuestState())
+    const [isSyncLoading, setIsSyncLoading] = useState(false)
 
     // Dispatch enrichi : mutation locale immédiate + écriture cloud si connecté
     const syncDispatch = useCallback((action: AppAction) => {
@@ -40,8 +42,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         localStorage.setItem("budgetflow_transactions", JSON.stringify(state.transactions))
     }, [state, session])
 
+    // Hydratation : connexion → données du compte ; déconnexion → retour aux données invité
+    useEffect(() => {
+        let cancelled = false
+
+        const hydrate = (data: AppState) => {
+            if (cancelled) return
+            dispatch({ type: "HYDRATE_GOALS", payload: data.goals })
+            dispatch({ type: "HYDRATE_BUDGET", payload: data.budget })
+            dispatch({ type: "HYDRATE_TRANSACTIONS", payload: data.transactions })
+        }
+
+        if (session) {
+            Promise.resolve()
+                .then(() => { if (!cancelled) setIsSyncLoading(true) })
+                .then(() => fetchUserData())
+                .then(hydrate)
+                .catch(err => console.error("[sync] chargement du compte échoué :", err))
+                .finally(() => { if (!cancelled) setIsSyncLoading(false) })
+        } else {
+            hydrate(getGuestState())
+        }
+
+        return () => { cancelled = true }
+    }, [session])
+
     return (
-        <AppContext.Provider value={{ state, dispatch: syncDispatch }}>
+        <AppContext.Provider value={{ state, dispatch: syncDispatch, isSyncLoading }}>
             {children}
         </AppContext.Provider>
     )

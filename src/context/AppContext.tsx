@@ -3,7 +3,8 @@ import type { AppState, AppAction } from "../types/common.type"
 
 interface AppContextType {
     state: AppState;
-    dispatch: React.Dispatch<AppAction>
+    dispatch: React.Dispatch<AppAction>;
+    isSyncLoading: boolean;
 }
 
 const AppContext = createContext<AppContextType | null>(null)
