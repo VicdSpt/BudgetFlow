@@ -96,7 +96,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         if (!session) return
         const guest = getGuestState()
         const userId = session.user.id
-        await Promise.all([
+        const results = await Promise.all([
             guest.goals.length > 0
                 ? supabase.from("goals").insert(guest.goals.map(g => goalToRow(g, userId)))
                 : Promise.resolve(),
@@ -110,6 +110,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
                 ? supabase.from("transactions").insert(guest.transactions.map(t => transactionToRow(t, userId)))
                 : Promise.resolve(),
         ])
+        const hasError = results.some(r => r && typeof r === "object" && "error" in r && r.error)
+        if (hasError) {
+            console.error("[migration] échec de l'import — données locales conservées")
+            alert("L'import a échoué. Vos données locales sont conservées — réessayez plus tard.")
+            setShowMigrationPrompt(false)
+            return
+        }
         clearGuestStorage()
         dispatch({ type: "HYDRATE_GOALS", payload: guest.goals })
         dispatch({ type: "HYDRATE_BUDGET", payload: guest.budget })
