@@ -3,6 +3,7 @@ import { LogIn, LogOut } from "lucide-react"
 import { navItems } from "./navItems"
 import { useAuth } from "../../context/AuthContext"
 import { useAppContext } from "../../context/AppContext"
+import { isSupabaseConfigured } from "../../lib/supabase"
 
 export default function SideBarMenu() {
     const location = useLocation()
@@ -32,36 +33,38 @@ export default function SideBarMenu() {
                     )
                 })}
             </div>
-            <div className="px-3 py-4 border-t border-slate-100">
-                {session ? (
-                    <div>
-                        <div className="flex items-center justify-between gap-2 px-3">
-                            <span className="text-xs text-slate-500 truncate" title={session.user.email}>
-                                {session.user.email}
-                            </span>
-                            <button
-                                onClick={signOut}
-                                title="Se déconnecter"
-                                className="text-slate-400 hover:text-rose-500 transition-colors shrink-0"
-                            >
-                                <LogOut size={16} />
-                            </button>
+            {isSupabaseConfigured && (
+                <div className="px-3 py-4 border-t border-slate-100">
+                    {session ? (
+                        <div>
+                            <div className="flex items-center justify-between gap-2 px-3">
+                                <span className="text-xs text-slate-500 truncate" title={session.user.email}>
+                                    {session.user.email}
+                                </span>
+                                <button
+                                    onClick={signOut}
+                                    title="Se déconnecter"
+                                    className="text-slate-400 hover:text-rose-500 transition-colors shrink-0"
+                                >
+                                    <LogOut size={16} />
+                                </button>
+                            </div>
+                            {isSyncLoading && <p className="text-xs text-slate-400 px-3 mt-1">Synchronisation…</p>}
                         </div>
-                        {isSyncLoading && <p className="text-xs text-slate-400 px-3 mt-1">Synchronisation…</p>}
-                    </div>
-                ) : (
-                    <Link
-                        to="/auth"
-                        className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${location.pathname === "/auth"
-                            ? "bg-emerald-50 text-emerald-700"
-                            : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
-                        }`}
-                    >
-                        <LogIn size={18} />
-                        Se connecter
-                    </Link>
-                )}
-            </div>
+                    ) : (
+                        <Link
+                            to="/auth"
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${location.pathname === "/auth"
+                                ? "bg-emerald-50 text-emerald-700"
+                                : "text-slate-500 hover:bg-slate-50 hover:text-slate-800"
+                            }`}
+                        >
+                            <LogIn size={18} />
+                            Se connecter
+                        </Link>
+                    )}
+                </div>
+            )}
         </nav>
     )
 }

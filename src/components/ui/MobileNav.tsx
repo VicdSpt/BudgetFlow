@@ -2,6 +2,7 @@ import { Link, useLocation } from "react-router-dom"
 import { LogIn, LogOut } from "lucide-react"
 import { navItems } from "./navItems"
 import { useAuth } from "../../context/AuthContext"
+import { isSupabaseConfigured } from "../../lib/supabase"
 
 export default function MobileNav() {
     const location = useLocation()
@@ -12,14 +13,16 @@ export default function MobileNav() {
             {/* Top bar : branding + auth */}
             <header className="md:hidden sticky top-0 z-40 bg-white border-b border-slate-100 px-4 py-3 flex items-center justify-between">
                 <span className="text-lg font-semibold text-slate-800">BudgetFlow</span>
-                {session ? (
-                    <button onClick={signOut} title="Se déconnecter" className="text-slate-400 hover:text-rose-500">
-                        <LogOut size={18} />
-                    </button>
-                ) : (
-                    <Link to="/auth" title="Se connecter" className="text-slate-400 hover:text-emerald-600">
-                        <LogIn size={18} />
-                    </Link>
+                {isSupabaseConfigured && (
+                    session ? (
+                        <button onClick={signOut} title="Se déconnecter" className="text-slate-400 hover:text-rose-500">
+                            <LogOut size={18} />
+                        </button>
+                    ) : (
+                        <Link to="/auth" title="Se connecter" className="text-slate-400 hover:text-emerald-600">
+                            <LogIn size={18} />
+                        </Link>
+                    )
                 )}
             </header>
 
