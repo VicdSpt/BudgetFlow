@@ -1,6 +1,6 @@
 import type { Goal, GoalStatus } from "../types/goal.type"
 import { percentageComplete, suggestedMonthlyContribution, monthsUntilDeadline } from "../utils/goalCalculation"
-import { formatMonth } from "../../budget/utils/BudgetCalculation"
+import { formatDate } from "../../../utils/dateUtils"
 import Button from "../../../components/ui/Button"
 
 interface GoalCardProps {
@@ -77,7 +77,7 @@ export default function GoalCard({ goal, onEdit, onDelete }: GoalCardProps) {
       {/* Footer : date + boutons */}
       <div className="flex items-center justify-between pt-1">
         {goal.deadlineDate
-          ? <p className="text-xs text-slate-400">Échéance : <span className="font-medium">{formatMonth(goal.deadlineDate)}</span></p>
+          ? <p className="text-xs text-slate-400">Échéance : <span className="font-medium">{formatDate(goal.deadlineDate)}</span></p>
           : <span />
         }
         <div className="flex gap-2">

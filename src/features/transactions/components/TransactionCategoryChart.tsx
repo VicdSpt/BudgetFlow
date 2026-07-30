@@ -39,7 +39,8 @@ export default function TransactionCategoryChart({ categoryTotals }: Transaction
             <Cell key={index} fill={entry.color} />
           ))}
         </Pie>
-        <Tooltip formatter={(value) => [`${Number(value).toFixed(2)}€`, '']} />
+        {/* formatter retourne [valeur, nom] : sans le nom, recharts affiche ": 63.00€" */}
+        <Tooltip formatter={(value, name) => [`${Number(value).toFixed(2)}€`, name]} />
         <Legend formatter={(value) => <span className="text-xs text-slate-600">{value}</span>} />
       </PieChart>
     </ResponsiveContainer>
