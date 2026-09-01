@@ -1714,4 +1714,115 @@ Deuxième subtilité : l'effet d'hydratation était keyé sur `[session]` — or
 
 ---
 
+## 33. Validation runtime aux frontières de confiance
+
+### Le problème : des types qui mentent
+
+`src/pages/SettingsPage.tsx` importait une sauvegarde ainsi :
+
+```ts
+const parsed = JSON.parse(content)                               // type: any
+dispatch({ type: "HYDRATE_GOALS", payload: parsed.goals ?? [] }) // attendu: Goal[]
+```
+
+Le compilateur accepte, parce que `any` est compatible avec tout. Mais rien n'a jamais vérifié que `status` valait bien `"active" | "completed" | "paused"`. Un fichier édité à la main, un export d'une ancienne version du schéma, et `statusConfig[goal.status]` renvoie `undefined` → crash sur `.label`.
+
+> **Le principe** : TypeScript n'existe pas à l'exécution. Une annotation est une **promesse faite au compilateur**, pas une vérification. À une frontière de confiance (fichier importé, réponse réseau, localStorage, colonne SQL), cette promesse n'est adossée à rien.
+
+Trois frontières identiques dans ce projet : l'import JSON, la lecture localStorage (`AppProvider.getGuestState`), et les casts `row.status as Goal["status"]` dans `mappers.ts`.
+
+### La solution : un type guard produit une preuve
+
+`src/lib/validators.ts` :
+
+```ts
+export function isGoal(value: unknown): value is Goal {
+  if (!isRecord(value)) return false
+  return (
+    isNonEmptyString(value.id) &&
+    isFiniteNumber(value.targetSavings) &&
+    isGoalStatus(value.status) &&
+    isOptional(value.deadlineDate, isIsoDay)
+  )
+}
+```
+
+Le paramètre est `unknown`, jamais `any` : `unknown` **oblige** à vérifier avant d'utiliser. Le retour `value is Goal` est un *type predicate* — après un `if (isGoal(x))`, TypeScript sait que `x` est un `Goal` dans cette branche.
+
+### Exhaustivité garantie à la compilation
+
+```ts
+function unionGuard<T extends string>(members: Record<T, true>) {
+  return (value: unknown): value is T =>
+    typeof value === "string" && Object.prototype.hasOwnProperty.call(members, value)
+}
+
+const isGoalStatus = unionGuard<GoalStatus>({ active: true, completed: true, paused: true })
+```
+
+`Record<T, true>` sur un objet littéral verrouille les deux sens : une clé manquante → *"Property 'paused' is missing"* ; une clé en trop → *"'archived' does not exist"*. Ajouter un statut à l'union casse le build. Sans ça, un membre oublié ferait **rejeter silencieusement des données valides**.
+
+`hasOwnProperty.call` et non `value in members` : `"toString" in {}` vaut `true` via la chaîne de prototypes, donc `in` accepterait `"toString"` comme statut valide.
+
+### Le piège : `Date.parse` ne valide pas les dates
+
+Première version, avec un commentaire faux :
+
+```ts
+// FAUX : "Date.parse valide l'existence (rejette 2026-02-31)"
+return ISO_DAY.test(value) && !Number.isNaN(Date.parse(value))
+```
+
+Vérifié dans Node :
+
+```
+Date.parse("2026-02-31")  →  2026-03-03   accepté
+Date.parse("2026-02-29")  →  2026-03-01   accepté (2026 n'est pas bissextile)
+Date.parse("2026-04-31")  →  2026-05-01   accepté
+```
+
+`Date.parse` fait **déborder** les dates impossibles (opération `MakeDay` de la spec ECMA-262), il ne les rejette pas. Le seul contrôle fiable est l'aller-retour :
+
+```ts
+const timestamp = Date.parse(value)
+if (Number.isNaN(timestamp)) return false
+return new Date(timestamp).toISOString().startsWith(value)   // reformate et compare
+```
+
+> **En interview :** « comment valider une date ? » — un regex valide la *forme*, jamais l'*existence*. Février 31 passe tous les regex du monde.
+
+### Absent ≠ malformé
+
+```ts
+function collect<T>(value: unknown, parse: (c: unknown) => T | null): Collected<T> {
+  if (value === undefined || value === null) return { items: [], rejected: 0, malformed: false }
+  if (!Array.isArray(value))                  return { items: [], rejected: 0, malformed: true }
+  ...
+}
+```
+
+Première version : tout ce qui n'était pas un tableau renvoyait `rejected: 0`. Conséquence — un backup contenant `"goals": {}` perdait **tous** les objectifs sans le moindre avertissement. Section absente (normal : vieux fichier exporté avant la feature transactions) et section illisible (perte réelle) doivent être distinguées.
+
+> Règle : on peut jeter des données, mais **jamais en silence**.
+
+### « Parse, don't validate »
+
+`mappers.ts` sérialise les optionnels absents en `null`, pas `undefined`. Un guard seul rejetterait l'objectif entier pour un champ facultatif. D'où des *parsers* qui normalisent avant de valider :
+
+```ts
+export function parseGoal(value: unknown): Goal | null {
+  if (!isRecord(value)) return null
+  const candidate = { ...value, deadlineDate: value.deadlineDate ?? undefined }
+  return isGoal(candidate) ? candidate : null
+}
+```
+
+Un guard répond oui/non. Un parser renvoie une donnée *normalisée* ou `null` — plus expressif dès qu'il faut réconcilier plusieurs représentations d'une même chose.
+
+### Le bug résiduel de l'import (corrigé au passage)
+
+`<input type="file">` ne redéclenche pas `onChange` si on resélectionne le **même** fichier : sa valeur n'a pas changé. Il faut réinitialiser `input.value = ""` après lecture.
+
+---
+
 *Document mis à jour au fur et à mesure de l'avancement du projet.*
