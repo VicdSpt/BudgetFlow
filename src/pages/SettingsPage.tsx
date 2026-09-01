@@ -4,6 +4,7 @@ import Button from "../components/ui/Button"
 import InfoTooltip from "../components/ui/InfoTooltip"
 import ConfirmDialog from "../components/ui/ConfirmDialog"
 import { buildDemoData } from "../utils/demoData"
+import { parseBackup } from "../lib/validators"
 import { useRef, useState } from "react"
 
 export default function SettingsPage() {
@@ -32,27 +33,47 @@ export default function SettingsPage() {
   }
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const input = e.target
+    const file = input.files?.[0]
     if (!file) return
 
-    // lire le fichier et dispatcher HYDRATE_GOALS + HYDRATE_BUDGET + HYDRATE_TRANSACTIONS
     const reader = new FileReader()
 
     reader.onload = (event) => {
+      // Réinitialise l'input pour que réimporter le MÊME fichier redéclenche onChange
+      input.value = ""
+
+      let raw: unknown
       try {
-        const content = event.target?.result as string
-        const parsed = JSON.parse(content)
-        // ?? = fallback si le champ est absent (ex: vieux fichier exporté avant la feature transactions)
-        dispatch({ type: "HYDRATE_BUDGET", payload: parsed.budget ?? { monthlyIncomes: [], spendingList: [] } })
-        dispatch({ type: "HYDRATE_GOALS", payload: parsed.goals ?? [] })
-        dispatch({ type: "HYDRATE_TRANSACTIONS", payload: parsed.transactions ?? [] })
+        raw = JSON.parse(String(event.target?.result ?? ""))
       } catch {
-        alert("Fichier invalide : impossible de lire cette sauvegarde.")
+        alert("Fichier invalide : ce n'est pas du JSON lisible.")
+        return
+      }
+
+      // parseBackup valide la forme à l'exécution : le type Goal[] devient une
+      // preuve, et non plus une annotation que personne ne vérifie.
+      const result = parseBackup(raw)
+      if (!result.ok) {
+        alert(`Import annulé — ${result.reason}`)
+        return
+      }
+
+      dispatch({ type: "HYDRATE_BUDGET", payload: result.data.budget })
+      dispatch({ type: "HYDRATE_GOALS", payload: result.data.goals })
+      dispatch({ type: "HYDRATE_TRANSACTIONS", payload: result.data.transactions })
+
+      if (result.skipped.length > 0) {
+        alert(`Import partiel : ${result.skipped.join(", ")}. Le reste a été restauré.`)
       }
     }
 
-    reader.readAsText(file)
+    reader.onerror = () => {
+      input.value = ""
+      alert("Impossible de lire ce fichier.")
+    }
 
+    reader.readAsText(file)
   }
 
   return (
